@@ -142,12 +142,16 @@ public class EnemyController : MonoBehaviour
 
     void Die()
     {
-        // 사망 체크
-        Debug.Log("사망했습니다.");
+        // 사망 로직
+        Debug.Log("적이 사망했습니다.");
 
-        // 사망 이펙트 표시 (몬스터 애니메이션에서 직접 설정)
+        // 경험치 및 골드 보상
+        int expReward = level * 5;  // 적 레벨에 비례한 경험치
+        int goldReward = level * 10;  // 적 레벨에 비례한 골드
 
-        // 사망 효과 표시
+        GameManager.instance?.EnemyDefeated(expReward, goldReward);
+
+        // 사망 이펙트 재생
         if (EffectsManager.instance != null)
         {
             EffectsManager.instance.PlayHitEffect(transform.position);
@@ -159,7 +163,7 @@ public class EnemyController : MonoBehaviour
             Destroy(healthBar.gameObject);
         }
 
-        // 사망 효과 제거
+        // 오브젝트 제거
         Destroy(gameObject, 0.5f);
     }
 }

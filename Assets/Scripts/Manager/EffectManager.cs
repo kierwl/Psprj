@@ -29,4 +29,11 @@ public class EffectsManager : MonoBehaviour
             Destroy(effect, 2f);
         }
     }
+
+    public void PlayLevelUpEffect(Vector3 position)
+    {
+        // 레벨업 이펙트 재생
+        Debug.Log("레벨업 이펙트 재생");
+    }
+
 }

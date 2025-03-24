@@ -44,6 +44,7 @@ public class PlayerLevel : MonoBehaviour
         UpdateLevelUI();
     }
 
+    // PlayerLevel.cs의 LevelUp 메서드 수정
     private void LevelUp()
     {
         currentLevel++;
@@ -53,7 +54,16 @@ public class PlayerLevel : MonoBehaviour
         // 레벨업 이벤트 및 효과
         Debug.Log("레벨 업! 현재 레벨: " + currentLevel);
 
-        // 레벨업 시 플레이어 스탯 증가 등 구현
+        // 자원 생성기 업데이트
+        FindObjectOfType<ResourceGenerator>()?.UpdatePlayerLevel(currentLevel);
+
+        // 레벨업 이펙트 또는 UI 알림
+        if (EffectsManager.instance != null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+                EffectsManager.instance.PlayLevelUpEffect(player.transform.position);
+        }
     }
 
     public void UpdateLevelUI()

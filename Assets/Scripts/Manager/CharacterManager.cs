@@ -11,12 +11,46 @@ public class CharacterManager : MonoBehaviour
     [System.Serializable]
     public class CharacterData
     {
+        public string id;
         public string name;
-        public int level;
+        public string description;
+        public int level = 1;
+        public int stars = 1; // 등급 (1-5성)
+        public CharacterType type; // 캐릭터 타입 (탱커, 딜러, 서포터 등)
         public Sprite icon;
         public GameObject prefab;
         public bool isUnlocked;
         public bool isActive;
+
+        // 기본 스탯
+        public float baseHealth = 100f;
+        public float baseAttack = 10f;
+        public float baseDefense = 5f;
+        public float baseSpeed = 1f;
+
+        // 레벨당 스탯 증가량
+        public float healthPerLevel = 10f;
+        public float attackPerLevel = 1f;
+        public float defensePerLevel = 0.5f;
+        public float speedPerLevel = 0.02f;
+
+        // 현재 레벨의 스탯 계산
+        public float GetCurrentHealth() => baseHealth + (level - 1) * healthPerLevel;
+        public float GetCurrentAttack() => baseAttack + (level - 1) * attackPerLevel;
+        public float GetCurrentDefense() => baseDefense + (level - 1) * defensePerLevel;
+        public float GetCurrentSpeed() => baseSpeed + (level - 1) * speedPerLevel;
+
+        // 강화 비용 계산
+        public int GetUpgradeCost() => 100 * level * stars;
+    }
+
+    public enum CharacterType
+    {
+        Tank,
+        Damage,
+        Support,
+        Mage,
+        Healer
     }
 
     public List<CharacterData> characters = new List<CharacterData>();
@@ -42,7 +76,7 @@ public class CharacterManager : MonoBehaviour
         SpawnActiveCharacters();
     }
 
-    private void InitializeCharacterUI()
+    public void InitializeCharacterUI()
     {
         // 기존 슬롯 제거
         foreach (Transform child in characterSlotsParent)
@@ -123,7 +157,7 @@ public class CharacterManager : MonoBehaviour
         SpawnActiveCharacters();
     }
 
-    private void SpawnActiveCharacters()
+    public void SpawnActiveCharacters()
     {
         // 활성 캐릭터 스폰
         foreach (CharacterData character in characters)
@@ -143,7 +177,7 @@ public class CharacterManager : MonoBehaviour
         }
     }
 
-    private void DespawnAllCharacters()
+    public void DespawnAllCharacters()
     {
         foreach (GameObject character in activeCharacters)
         {
@@ -160,4 +194,29 @@ public class CharacterManager : MonoBehaviour
             InitializeCharacterUI();
         }
     }
+
+    public void UpdateCharacter(CharacterData character)
+    {
+        for (int i = 0; i < characters.Count; i++)
+        {
+            if (characters[i].id == character.id)
+            {
+                characters[i] = character;
+                break;
+            }
+        }
+    }
+    public void UpdateCharacterBonusStats(string characterId, float healthBonus, float attackBonus, float defenseBonus, float speedBonus)
+    {
+        CharacterData character = characters.Find(c => c.id == characterId);
+        if (character != null)
+        {
+            character.baseHealth += healthBonus;
+            character.baseAttack += attackBonus;
+            character.baseDefense += defenseBonus;
+            character.baseSpeed += speedBonus;
+            UpdateCharacter(character);
+        }
+    }
+
 }

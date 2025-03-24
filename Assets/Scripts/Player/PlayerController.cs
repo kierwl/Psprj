@@ -17,6 +17,8 @@ public class PlayerController : MonoBehaviour
     private NavMeshAgent agent;
     private Animator animator;
     private float nextAttackTime = 0f;
+    private bool autoBattleEnabled = true;
+
 
     // 가장 가까운 적을 담을 변수
     private GameObject targetEnemy;
@@ -38,6 +40,9 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+
+        if (!autoBattleEnabled)
+            return;
         // 가장 가까운 적 찾기
         FindClosestEnemy();
 
@@ -56,6 +61,21 @@ public class PlayerController : MonoBehaviour
                 // 공격 범위 밖 - 이동
                 MoveToTarget();
             }
+        }
+    }
+
+    public void SetAutoBattle(bool enabled)
+    {
+        autoBattleEnabled = enabled;
+
+        // 자동 전투가 비활성화된 경우 이동 및 공격 중지
+        if (!autoBattleEnabled)
+        {
+            agent.isStopped = true;
+        }
+        else
+        {
+            agent.isStopped = false;
         }
     }
 

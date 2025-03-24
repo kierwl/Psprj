@@ -23,27 +23,51 @@ public class EnemyController : MonoBehaviour
 
     void Start()
     {
+        // ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>();  // ³ªÁß¿¡ Ãß°¡ÇÒ ¾Ö´Ï¸ŞÀÌÅÍ
+        animator = GetComponent<Animator>();
 
-        // ÇÃ·¹ÀÌ¾î Ã£±â
-        player = GameObject.FindGameObjectWithTag("Player").transform;
+        // í”Œë ˆì´ì–´ ì°¾ê¸°
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject == null)
+        {
+            Debug.LogError("Playerë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. Player ì˜¤ë¸Œì íŠ¸ì— 'Player' íƒœê·¸ê°€ ì„¤ì •ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•˜ì„¸ìš”.");
+            return;
+        }
+        player = playerObject.transform;
 
-        // ÀÌµ¿ ¼Óµµ ¼³Á¤
+        // ì´ë™ ì†ë„ ì„¤ì •
         if (agent != null)
         {
             agent.speed = moveSpeed;
         }
-        // Ã¼·Â ÃÊ±âÈ­
+        else
+        {
+            Debug.LogError("NavMeshAgent ì»´í¬ë„ŒíŠ¸ê°€ ì—†ìŠµë‹ˆë‹¤.");
+            return;
+        }
+
+        // ì²´ë ¥ ì´ˆê¸°í™”
         health = maxHealth;
 
-        // Ã¼·Â¹Ù »ı¼º
+        // ì²´ë ¥ë°” ìƒì„±
         if (healthBarPrefab != null)
         {
             GameObject healthBarObj = Instantiate(healthBarPrefab, transform.position, Quaternion.identity);
             healthBar = healthBarObj.GetComponent<HealthBar>();
-            healthBar.target = transform;
-            healthBar.UpdateHealthBar(health, maxHealth);
+            if (healthBar != null)
+            {
+                healthBar.target = transform;
+                healthBar.UpdateHealthBar(health, maxHealth);
+            }
+            else
+            {
+                Debug.LogError("HealthBar ì»´í¬ë„ŒíŠ¸ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("healthBarPrefabì´ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
         }
     }
 
@@ -55,12 +79,12 @@ public class EnemyController : MonoBehaviour
 
             if (distanceToPlayer <= attackRange)
             {
-                // °ø°İ ¹üÀ§ ³» - °ø°İ
+                // ê³µê²© ì²´í¬ - ê³µê²©
                 Attack();
             }
             else
             {
-                // °ø°İ ¹üÀ§ ¹Û - ÀÌµ¿
+                // ì´ë™ ì²´í¬ - ì´ë™
                 agent.SetDestination(player.position);
             }
         }
@@ -68,43 +92,43 @@ public class EnemyController : MonoBehaviour
 
     void Attack()
     {
-        // °ø°İ Äğ´Ù¿î Ã¼Å©
+        // ê³µê²© ì²´í¬ - ê³µê²©
         if (Time.time >= nextAttackTime)
         {
-            // °ø°İ ·ÎÁ÷
-            // ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı (³ªÁß¿¡ Ãß°¡)
+            // ê³µê²© ì²´í¬
+            // ëª¬ìŠ¤í„° ì• ë‹ˆë©”ì´ì…˜ ì„¤ì • (ì• ë‹ˆë©”ì´ì…˜ ì»¨íŠ¸ë¡¤ëŸ¬ì—ì„œ ì§ì ‘ ì„¤ì •)
             // if (animator != null)
             //     animator.SetTrigger("Attack");
 
-            // µ¥¹ÌÁö Àû¿ë
+            // ê³µê²© í›„ ëŒ€ìƒ í”¼í•´
             player.GetComponent<PlayerController>()?.TakeDamage(attackDamage);
 
-            // ´ÙÀ½ °ø°İ ½Ã°£ ¼³Á¤
+            // ê³µê²© í›„ ëŒ€ê¸° ì‹œê°„ ì„¤ì •
             nextAttackTime = Time.time + 1f / attackSpeed;
 
-            Debug.Log("ÀûÀÌ °ø°İÇß½À´Ï´Ù: " + attackDamage + " µ¥¹ÌÁö");
+            Debug.Log("ê³µê²© ì„±ê³µí–ˆìŠµë‹ˆë‹¤: " + attackDamage + " í”¼í•´ë¥¼ ì…í˜”ìŠµë‹ˆë‹¤.");
         }
     }
     public void TakeDamage(float damage)
     {
-        bool isCritical = Random.Range(0f, 100f) <= 10f; // 10% Å©¸®Æ¼ÄÃ È®·ü
+        bool isCritical = Random.Range(0f, 100f) <= 10f; // 10% í™•ë¥ ë¡œ í¬ë¦¬í‹°ì»¬ íˆíŠ¸
 
-        // µ¥¹ÌÁö Àû¿ë
+        // ì²´ë ¥ ê°ì†Œ
         health -= damage;
 
-        // Ã¼·Â¹Ù ¾÷µ¥ÀÌÆ®
+        // ì²´ë ¥ë°” ì—…ë°ì´íŠ¸
         if (healthBar != null)
         {
             healthBar.UpdateHealthBar(health, maxHealth);
         }
 
-        // µ¥¹ÌÁö ÅØ½ºÆ® Ç¥½Ã
+        // í”¼í•´ í…ìŠ¤íŠ¸ í‘œì‹œ
         if (DamageTextManager.instance != null)
         {
             DamageTextManager.instance.ShowDamageText(damage, transform.position + Vector3.up, isCritical);
         }
 
-        // ÇÇ°İ ÀÌÆåÆ® Àç»ı
+        // íš¨ê³¼ í‘œì‹œ
         if (EffectsManager.instance != null)
         {
             EffectsManager.instance.PlayHitEffect(transform.position);
@@ -118,24 +142,24 @@ public class EnemyController : MonoBehaviour
 
     void Die()
     {
-        // »ç¸Á ·ÎÁ÷
-        Debug.Log("ÀûÀÌ »ç¸ÁÇß½À´Ï´Ù.");
+        // ì‚¬ë§ ì²´í¬
+        Debug.Log("ì‚¬ë§í–ˆìŠµë‹ˆë‹¤.");
 
-        // °æÇèÄ¡ ¹× °ñµå º¸»ó (³ªÁß¿¡ ±¸Çö)
+        // ì‚¬ë§ ì´í™íŠ¸ í‘œì‹œ (ëª¬ìŠ¤í„° ì• ë‹ˆë©”ì´ì…˜ì—ì„œ ì§ì ‘ ì„¤ì •)
 
-        // »ç¸Á ÀÌÆåÆ® Àç»ı
+        // ì‚¬ë§ íš¨ê³¼ í‘œì‹œ
         if (EffectsManager.instance != null)
         {
             EffectsManager.instance.PlayHitEffect(transform.position);
         }
 
-        // Ã¼·Â¹Ù Á¦°Å
+        // ì²´ë ¥ë°” ì œê±°
         if (healthBar != null)
         {
             Destroy(healthBar.gameObject);
         }
 
-        // ¿ÀºêÁ§Æ® Á¦°Å
+        // ì‚¬ë§ íš¨ê³¼ ì œê±°
         Destroy(gameObject, 0.5f);
     }
 }

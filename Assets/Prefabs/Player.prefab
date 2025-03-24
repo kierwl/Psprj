@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1253996184555919529}
   - component: {fileID: 1658626372030457483}
   - component: {fileID: 7962830955022685753}
+  - component: {fileID: 7048827737654882799}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -107,6 +108,28 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &7048827737654882799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 751931693651037921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8eda7046f95909746b71d5e01da08f00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  health: 100
+  attackDamage: 10
+  attackRange: 2
+  attackSpeed: 1
+  healthBarPrefab: {fileID: 4203704161509237510, guid: 5c7d26bc666f5d244ac7b913ddc7475e,
+    type: 3}
+  damageCalculator:
+    criticalChance: 10
+    criticalMultiplier: 1.5
 --- !u!1 &2545880109904834215
 GameObject:
   m_ObjectHideFlags: 0

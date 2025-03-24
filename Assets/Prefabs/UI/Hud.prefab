@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1975777356139532721}
   - component: {fileID: 8188620371856131317}
   - component: {fileID: 1175891175245773289}
+  - component: {fileID: 359203644574576002}
   m_Layer: 5
   m_Name: Hud
   m_TagString: Untagged
@@ -102,6 +103,22 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &359203644574576002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4203704161509237510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: addf8bf28589c4e4e8afe289d5f3e86d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  healthFill: {fileID: 6096612634727257103}
+  target: {fileID: 0}
+  offset: {x: 0, y: 1.5, z: 0}
+  alwaysFaceCamera: 1
 --- !u!1 &5331348974024298957
 GameObject:
   m_ObjectHideFlags: 0
@@ -114,7 +131,7 @@ GameObject:
   - component: {fileID: 683149577232524016}
   - component: {fileID: 6096612634727257103}
   m_Layer: 5
-  m_Name: Image
+  m_Name: HealthBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

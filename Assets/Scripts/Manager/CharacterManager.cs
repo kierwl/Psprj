@@ -1,4 +1,4 @@
-// Ä³¸¯ÅÍ °ü¸® ½Ã½ºÅÛ
+// Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã½ï¿½ï¿½ï¿½
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -8,6 +8,9 @@ public class CharacterManager : MonoBehaviour
 {
     public static CharacterManager instance;
 
+    [Header("Character Settings")]
+    public string currentCharacterId; // í˜„ìž¬ ì„ íƒëœ ìºë¦­í„° ID
+
     [System.Serializable]
     public class CharacterData
     {
@@ -15,32 +18,32 @@ public class CharacterManager : MonoBehaviour
         public string name;
         public string description;
         public int level = 1;
-        public int stars = 1; // µî±Þ (1-5¼º)
-        public CharacterType type; // Ä³¸¯ÅÍ Å¸ÀÔ (ÅÊÄ¿, µô·¯, ¼­Æ÷ÅÍ µî)
+        public int stars = 1; // ï¿½ï¿½ï¿½ (1-5ï¿½ï¿½)
+        public CharacterType type; // Ä³ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ (ï¿½ï¿½Ä¿, ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½)
         public Sprite icon;
         public GameObject prefab;
         public bool isUnlocked;
         public bool isActive;
 
-        // ±âº» ½ºÅÈ
+        // ï¿½âº» ï¿½ï¿½ï¿½ï¿½
         public float baseHealth = 100f;
         public float baseAttack = 10f;
         public float baseDefense = 5f;
         public float baseSpeed = 1f;
 
-        // ·¹º§´ç ½ºÅÈ Áõ°¡·®
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         public float healthPerLevel = 10f;
         public float attackPerLevel = 1f;
         public float defensePerLevel = 0.5f;
         public float speedPerLevel = 0.02f;
 
-        // ÇöÀç ·¹º§ÀÇ ½ºÅÈ °è»ê
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         public float GetCurrentHealth() => baseHealth + (level - 1) * healthPerLevel;
         public float GetCurrentAttack() => baseAttack + (level - 1) * attackPerLevel;
         public float GetCurrentDefense() => baseDefense + (level - 1) * defensePerLevel;
         public float GetCurrentSpeed() => baseSpeed + (level - 1) * speedPerLevel;
 
-        // °­È­ ºñ¿ë °è»ê
+        // ï¿½ï¿½È­ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         public int GetUpgradeCost() => 100 * level * stars;
     }
 
@@ -74,42 +77,48 @@ public class CharacterManager : MonoBehaviour
     {
         InitializeCharacterUI();
         SpawnActiveCharacters();
+
+        // ê¸°ë³¸ ìºë¦­í„° ì„¤ì •
+        if (characters.Count > 0 && string.IsNullOrEmpty(currentCharacterId))
+        {
+            currentCharacterId = characters[0].id;
+        }
     }
 
     public void InitializeCharacterUI()
     {
-        // ±âÁ¸ ½½·Ô Á¦°Å
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         foreach (Transform child in characterSlotsParent)
         {
             Destroy(child.gameObject);
         }
 
-        // Ä³¸¯ÅÍ ½½·Ô »ý¼º
+        // Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         for (int i = 0; i < characters.Count; i++)
         {
             GameObject slot = Instantiate(characterSlotPrefab, characterSlotsParent);
 
-            // Ä³¸¯ÅÍ ¾ÆÀÌÄÜ ¼³Á¤
+            // Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             Image iconImage = slot.transform.Find("Icon").GetComponent<Image>();
             iconImage.sprite = characters[i].icon;
 
-            // Ä³¸¯ÅÍ ·¹º§ ¼³Á¤
+            // Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             TextMeshProUGUI levelText = slot.transform.Find("LevelText").GetComponent<TextMeshProUGUI>();
             levelText.text = "Lv." + characters[i].level;
 
-            // Àá±Ý ¾ÆÀÌÄÜ ¼³Á¤
+            // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             Transform lockIcon = slot.transform.Find("LockIcon");
             if (lockIcon != null)
                 lockIcon.gameObject.SetActive(!characters[i].isUnlocked);
 
-            // È°¼º »óÅÂ Ç¥½Ã
+            // È°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½
             if (characters[i].isActive)
                 slot.GetComponent<Image>().color = new Color(1, 1, 1, 1);
             else
                 slot.GetComponent<Image>().color = new Color(0.7f, 0.7f, 0.7f, 1);
 
-            // Å¬¸¯ ÀÌº¥Æ® ¼³Á¤
-            int characterIndex = i;  // Å¬·ÎÀú ¹®Á¦¸¦ ÇÇÇÏ±â À§ÇÑ ·ÎÄÃ º¯¼ö
+            // Å¬ï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½ï¿½ï¿½ï¿½
+            int characterIndex = i;  // Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             Button button = slot.GetComponent<Button>();
             if (button != null)
             {
@@ -123,18 +132,18 @@ public class CharacterManager : MonoBehaviour
         if (index < 0 || index >= characters.Count)
             return;
 
-        // Àá±Ý ÇØÁ¦µÈ Ä³¸¯ÅÍ¸¸ Åä±Û °¡´É
+        // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (!characters[index].isUnlocked)
             return;
 
-        // È°¼º »óÅÂ Åä±Û
+        // È°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         if (characters[index].isActive)
         {
             characters[index].isActive = false;
         }
         else
         {
-            // È°¼º Ä³¸¯ÅÍ ¼ö È®ÀÎ
+            // È°ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È®ï¿½ï¿½
             int activeCount = 0;
             foreach (CharacterData character in characters)
             {
@@ -142,29 +151,29 @@ public class CharacterManager : MonoBehaviour
                     activeCount++;
             }
 
-            // ÃÖ´ë È°¼º Ä³¸¯ÅÍ ¼ö¸¦ ÃÊ°úÇÏÁö ¾Ê´Â °æ¿ì¿¡¸¸ È°¼ºÈ­
+            // ï¿½Ö´ï¿½ È°ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½ï¿½ì¿¡ï¿½ï¿½ È°ï¿½ï¿½È­
             if (activeCount < maxActiveCharacters)
                 characters[index].isActive = true;
             else
-                Debug.Log("È°¼º Ä³¸¯ÅÍ ¼ö°¡ ÃÖ´ëÄ¡¿¡ µµ´ÞÇß½À´Ï´Ù.");
+                Debug.Log("È°ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½ï¿½Ï´ï¿½.");
         }
 
-        // UI ¾÷µ¥ÀÌÆ®
+        // UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
         InitializeCharacterUI();
 
-        // È°¼º Ä³¸¯ÅÍ ´Ù½Ã ½ºÆù
+        // È°ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½
         DespawnAllCharacters();
         SpawnActiveCharacters();
     }
 
     public void SpawnActiveCharacters()
     {
-        // È°¼º Ä³¸¯ÅÍ ½ºÆù
+        // È°ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         foreach (CharacterData character in characters)
         {
             if (character.isActive && character.prefab != null)
             {
-                // ÇÃ·¹ÀÌ¾î ÁÖº¯¿¡ ½ºÆù
+                // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Öºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 GameObject player = GameObject.FindGameObjectWithTag("Player");
                 if (player != null)
                 {
@@ -219,4 +228,19 @@ public class CharacterManager : MonoBehaviour
         }
     }
 
+    // í˜„ìž¬ ìºë¦­í„° ë³€ê²½
+    public void SetCurrentCharacter(string characterId)
+    {
+        if (characters.Exists(c => c.id == characterId))
+        {
+            currentCharacterId = characterId;
+            Debug.Log($"í˜„ìž¬ ìºë¦­í„°ê°€ {GetCurrentCharacter().name}ë¡œ ë³€ê²½ë˜ì—ˆìŠµë‹ˆë‹¤.");
+        }
+    }
+
+    // í˜„ìž¬ ì„ íƒëœ ìºë¦­í„° ë°ì´í„° ë°˜í™˜
+    public CharacterData GetCurrentCharacter()
+    {
+        return characters.Find(c => c.id == currentCharacterId);
+    }
 }

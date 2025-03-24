@@ -9,7 +9,7 @@ public class EquipmentManager : MonoBehaviour
     public List<EquipmentData> playerEquipment = new List<EquipmentData>();
     public Dictionary<string, List<EquipmentData>> equipmentByCharacter = new Dictionary<string, List<EquipmentData>>();
 
-    // ¸ğµç º¸À¯ Àåºñ
+    // ì „ì²´ ì•„ì´í…œ ëª©ë¡
     public List<EquipmentData> inventory = new List<EquipmentData>();
 
     private void Awake()
@@ -25,7 +25,7 @@ public class EquipmentManager : MonoBehaviour
         if (equipment != null)
         {
             inventory.Add(equipment);
-            Debug.Log("»õ Àåºñ È¹µæ: " + equipment.name);
+            Debug.Log("ìƒˆë¡œìš´ ì•„ì´í…œì„ íšë“í–ˆìŠµë‹ˆë‹¤: " + equipment.name);
         }
     }
 
@@ -34,22 +34,22 @@ public class EquipmentManager : MonoBehaviour
         if (string.IsNullOrEmpty(characterId) || equipment == null)
             return;
 
-        // Ä³¸¯ÅÍ Àåºñ ¸ñ·ÏÀÌ ¾øÀ¸¸é »ı¼º
+        // í•´ë‹¹ ìºë¦­í„°ê°€ í•´ë‹¹ íƒ€ì…ì˜ ì¥ë¹„ë¥¼ ê°€ì§€ê³  ìˆëŠ”ì§€ í™•ì¸
         if (!equipmentByCharacter.ContainsKey(characterId))
         {
             equipmentByCharacter[characterId] = new List<EquipmentData>();
         }
 
-        // °°Àº Å¸ÀÔÀÇ Àåºñ ÇØÁ¦
+        // í•´ë‹¹ ìºë¦­í„°ê°€ í•´ë‹¹ íƒ€ì…ì˜ ì¥ë¹„ë¥¼ ì¥ì°©í•˜ê³  ìˆëŠ”ì§€ í™•ì¸
         UnequipItemOfType(characterId, equipment.type);
 
-        // Àåºñ ÀåÂø
+        // ì¥ì°©
         equipmentByCharacter[characterId].Add(equipment);
 
-        // ÀÎº¥Åä¸®¿¡¼­ Á¦°Å
+        // ì¸ë²¤í† ë¦¬ì—ì„œ ì œê±°
         inventory.Remove(equipment);
 
-        // Ä³¸¯ÅÍ ½ºÅÈ ¾÷µ¥ÀÌÆ®
+        // ìºë¦­í„° ìŠ¤íƒ¯ ì—…ë°ì´íŠ¸
         UpdateCharacterStats(characterId);
     }
 
@@ -62,10 +62,10 @@ public class EquipmentManager : MonoBehaviour
         {
             equipmentByCharacter[characterId].Remove(equipment);
 
-            // ÀÎº¥Åä¸®¿¡ Ãß°¡
+            // ì¸ë²¤í† ë¦¬ì— ì¶”ê°€
             inventory.Add(equipment);
 
-            // Ä³¸¯ÅÍ ½ºÅÈ ¾÷µ¥ÀÌÆ®
+            // ìºë¦­í„° ìŠ¤íƒ¯ ì—…ë°ì´íŠ¸
             UpdateCharacterStats(characterId);
         }
     }
@@ -129,7 +129,7 @@ public class EquipmentManager : MonoBehaviour
         if (string.IsNullOrEmpty(characterId))
             return;
 
-        // Àåºñ·Î ÀÎÇÑ ½ºÅÈ º¸³Ê½º °è»ê
+        // ìºë¦­í„°ì˜ ê¸°ë³¸ ìŠ¤íƒ¯ ê³„ì‚° ë°©ì‹
         float healthBonus = 0;
         float attackBonus = 0;
         float defenseBonus = 0;
@@ -146,8 +146,8 @@ public class EquipmentManager : MonoBehaviour
             }
         }
 
-        // Ä³¸¯ÅÍ ½ºÅÈ ¾÷µ¥ÀÌÆ®
-        // Ä³¸¯ÅÍ ¸Å´ÏÀú¿Í ¿¬µ¿ ÇÊ¿ä
+        // ìºë¦­í„° ìŠ¤íƒ¯ ì—…ë°ì´íŠ¸
+        // ìºë¦­í„°ì˜ ìµœëŒ€ ìŠ¤íƒ¯ ê³„ì‚° ë°©ì‹
         CharacterManager.instance.UpdateCharacterBonusStats(characterId, healthBonus, attackBonus, defenseBonus, speedBonus);
     }
 
@@ -160,12 +160,12 @@ public class EquipmentManager : MonoBehaviour
 
         if (CurrencyManager.instance.SpendGold(cost))
         {
-            // ·¹º§ Áõ°¡
+            // ì¥ë¹„ ë ˆë²¨ ì¦ê°€
             equipment.level++;
 
-            Debug.Log(equipment.name + " Àåºñ°¡ ·¹º§ " + equipment.level + "·Î °­È­µÇ¾ú½À´Ï´Ù!");
+            Debug.Log(equipment.name + " ì—…ê·¸ë ˆì´ë“œ ì™„ë£Œ! í˜„ì¬ ë ˆë²¨: " + equipment.level);
 
-            // ÀåÂø ÁßÀÎ °æ¿ì ½ºÅÈ ¾÷µ¥ÀÌÆ®
+            // ì¥ë¹„ ìŠ¤íƒ¯ ì—…ë°ì´íŠ¸
             foreach (var characterId in equipmentByCharacter.Keys)
             {
                 if (equipmentByCharacter[characterId].Contains(equipment))
@@ -177,7 +177,76 @@ public class EquipmentManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("°ñµå°¡ ºÎÁ·ÇÕ´Ï´Ù!");
+            Debug.Log("ê³¨ë“œê°€ ë¶€ì¡±í•©ë‹ˆë‹¤!");
         }
+
+        // UI ì—…ë°ì´íŠ¸ ì²˜ë¦¬
+    }
+
+    public void SellEquipment(EquipmentData equipment)
+    {
+        if (equipment == null)
+            return;
+        int sellPrice = equipment.GetUpgradeCost() / 2;
+        CurrencyManager.instance.AddGold(sellPrice);
+        // ì¸ë²¤í† ë¦¬ì—ì„œ ì œê±°
+        inventory.Remove(equipment);
+        // ì¥ë¹„ ì œê±°
+        foreach (var characterId in equipmentByCharacter.Keys)
+        {
+            if (equipmentByCharacter[characterId].Contains(equipment))
+            {
+                UnequipItem(characterId, equipment);
+                break;
+            }
+        }
+        Debug.Log(equipment.name + " íŒë§¤ ì™„ë£Œ! íŒë§¤ ìˆ˜ìµ: " + sellPrice + " ê³¨ë“œë¥¼ íšë“í–ˆìŠµë‹ˆë‹¤!");
+        // UI ì—…ë°ì´íŠ¸ ì²˜ë¦¬
+    }
+
+    public void RemoveEquipment(EquipmentData equipment)
+    {
+        if (equipment == null)
+            return;
+        // ì¸ë²¤í† ë¦¬ì—ì„œ ì œê±°
+        inventory.Remove(equipment);
+        // ì¥ë¹„ ì œê±°
+        foreach (var characterId in equipmentByCharacter.Keys)
+        {
+            if (equipmentByCharacter[characterId].Contains(equipment))
+            {
+                UnequipItem(characterId, equipment);
+                break;
+            }
+        }
+        // UI ì—…ë°ì´íŠ¸ ì²˜ë¦¬
+    }
+
+    // íŠ¹ì • íƒ€ì…ì˜ ì•„ì´í…œ ëª©ë¡ ë°˜í™˜
+    public List<EquipmentData> GetItemsByType(EquipmentType type)
+    {
+        List<EquipmentData> items = new List<EquipmentData>();
+        foreach (var item in inventory)
+        {
+            if (item.type == type)
+            {
+                items.Add(item);
+            }
+        }
+        return items;
+    }
+
+    // ì•„ì´í…œì´ ì¥ì°©ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸
+    public bool IsEquipped(EquipmentData item)
+    {
+        if (item == null)
+            return false;
+
+        foreach (var characterEquipment in equipmentByCharacter.Values)
+        {
+            if (characterEquipment.Contains(item))
+                return true;
+        }
+        return false;
     }
 }

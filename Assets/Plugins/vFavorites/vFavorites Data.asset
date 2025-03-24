@@ -1,0 +1,106 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 066cf82f8f80d408c856e48fc8f1127b, type: 3}
+  m_Name: vFavorites Data
+  m_EditorClassIdentifier: 
+  pages:
+  - items: []
+    name: Page 1
+    _id: 1039380866
+  - items: []
+    name: Page 2
+    _id: 1052984330
+  - items: []
+    name: Page 3
+    _id: 1060748091
+  - items:
+    - globalId:
+        globalObjectIdString: GlobalObjectId_V1-1-b76cde485dfb00a4f97ee53c16f2c668-11500000-0
+      _typeString: UnityEditor.MonoScript, UnityEditor.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      _obj: {fileID: 11500000, guid: b76cde485dfb00a4f97ee53c16f2c668, type: 3}
+      isSceneGameObject: 0
+      isFolder: 0
+      isAsset: 1
+      _id: 1014136578
+    - globalId:
+        globalObjectIdString: GlobalObjectId_V1-1-6fb3a115c66d9734ba8550dc451ee562-102900000-0
+      _typeString: UnityEditor.DefaultAsset, UnityEditor.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      _obj: {fileID: 102900000, guid: 6fb3a115c66d9734ba8550dc451ee562, type: 3}
+      isSceneGameObject: 0
+      isFolder: 1
+      isAsset: 0
+      _id: 1064320854
+    - globalId:
+        globalObjectIdString: GlobalObjectId_V1-1-71fd25778cc042c40a9419da235a6e3c-102900000-0
+      _typeString: UnityEditor.DefaultAsset, UnityEditor.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      _obj: {fileID: 102900000, guid: 71fd25778cc042c40a9419da235a6e3c, type: 3}
+      isSceneGameObject: 0
+      isFolder: 1
+      isAsset: 0
+      _id: 1032080849
+    - globalId:
+        globalObjectIdString: GlobalObjectId_V1-1-15a96a5ae7b125c4c8c25467531d3ffc-102900000-0
+      _typeString: UnityEditor.DefaultAsset, UnityEditor.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      _obj: {fileID: 102900000, guid: 15a96a5ae7b125c4c8c25467531d3ffc, type: 3}
+      isSceneGameObject: 0
+      isFolder: 1
+      isAsset: 0
+      _id: 1060413395
+    name: Page 4
+    _id: 1049740005
+  - items:
+    - globalId:
+        globalObjectIdString: GlobalObjectId_V1-1-ad3571812e62c35499f46bf8b41aa61a-102900000-0
+      _typeString: UnityEditor.DefaultAsset, UnityEditor.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      _obj: {fileID: 102900000, guid: ad3571812e62c35499f46bf8b41aa61a, type: 3}
+      isSceneGameObject: 0
+      isFolder: 1
+      isAsset: 0
+      _id: 1050047365
+    - globalId:
+        globalObjectIdString: GlobalObjectId_V1-1-2758da54125cb7d4383b063d5463f37f-102900000-0
+      _typeString: UnityEditor.DefaultAsset, UnityEditor.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      _obj: {fileID: 102900000, guid: 2758da54125cb7d4383b063d5463f37f, type: 3}
+      isSceneGameObject: 0
+      isFolder: 1
+      isAsset: 0
+      _id: 1063684252
+    - globalId:
+        globalObjectIdString: GlobalObjectId_V1-1-6fb9b0a2be8db37419b2dc412e1736cd-102900000-0
+      _typeString: UnityEditor.DefaultAsset, UnityEditor.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      _obj: {fileID: 102900000, guid: 6fb9b0a2be8db37419b2dc412e1736cd, type: 3}
+      isSceneGameObject: 0
+      isFolder: 1
+      isAsset: 0
+      _id: 1056992789
+    - globalId:
+        globalObjectIdString: GlobalObjectId_V1-1-a937a7143da894542aa216fc4f00ca49-102900000-0
+      _typeString: UnityEditor.DefaultAsset, UnityEditor.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      _obj: {fileID: 102900000, guid: a937a7143da894542aa216fc4f00ca49, type: 3}
+      isSceneGameObject: 0
+      isFolder: 1
+      isAsset: 0
+      _id: 1053662766
+    name: Page 5
+    _id: 1064797982
+  - items: []
+    name: Page 6
+    _id: 0
+  rowScale: 1

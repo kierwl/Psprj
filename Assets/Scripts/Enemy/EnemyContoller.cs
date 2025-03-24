@@ -104,7 +104,7 @@ public class EnemyController : MonoBehaviour
             player.GetComponent<PlayerController>()?.TakeDamage(attackDamage);
 
             // 공격 후 대기 시간 설정
-            nextAttackTime = Time.time + 1f / attackSpeed;
+            nextAttackTime = Time.time + 3f / attackSpeed;
 
             Debug.Log("공격 성공했습니다: " + attackDamage + " 피해를 입혔습니다.");
         }

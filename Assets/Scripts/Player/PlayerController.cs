@@ -13,22 +13,25 @@ public class PlayerController : MonoBehaviour
     private HealthBar healthBar;
     public DamageCalculator damageCalculator = new DamageCalculator();
 
-
     private NavMeshAgent agent;
     private Animator animator;
     private float nextAttackTime = 0f;
     private bool autoBattleEnabled = true;
+    private bool isDead = false;
 
+    // ì• ë‹ˆë©”ì´ì…˜ íŒŒë¼ë¯¸í„° ì´ë¦„
+    private const string PARAM_IS_ATTACKING = "IsAttacking";
+    private const string PARAM_IS_DEAD = "IsDead";
 
-    // °¡Àå °¡±î¿î ÀûÀ» ´ãÀ» º¯¼ö
+    // ì• ë‹ˆë©”ì´ì…˜   
     private GameObject targetEnemy;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>();  // ³ªÁß¿¡ Ãß°¡ÇÒ ¾Ö´Ï¸ŞÀÌÅÍ
+        animator = GetComponent<Animator>();  // ï¿½ï¿½ï¿½ß¿ï¿½ ï¿½ß°ï¿½ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½ï¿½ï¿½ï¿½
 
-        // Ã¼·Â¹Ù »ı¼º
+        // Ã¼ï¿½Â¹ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (healthBarPrefab != null)
         {
             GameObject healthBarObj = Instantiate(healthBarPrefab, transform.position, Quaternion.identity);
@@ -40,25 +43,26 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (isDead) return;
 
         if (!autoBattleEnabled)
             return;
-        // °¡Àå °¡±î¿î Àû Ã£±â
+        //    Ã£
         FindClosestEnemy();
 
-        // ÀûÀÌ ÀÖ°í °ø°İ ¹üÀ§ ³»¿¡ ÀÖÀ¸¸é °ø°İ
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (targetEnemy != null)
         {
             float distanceToEnemy = Vector3.Distance(transform.position, targetEnemy.transform.position);
 
             if (distanceToEnemy <= attackRange)
             {
-                // °ø°İ ¹üÀ§ ³» - °ø°İ
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ - ï¿½ï¿½ï¿½ï¿½
                 Attack();
             }
             else
             {
-                // °ø°İ ¹üÀ§ ¹Û - ÀÌµ¿
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ - ï¿½Ìµï¿½
                 MoveToTarget();
             }
         }
@@ -68,7 +72,7 @@ public class PlayerController : MonoBehaviour
     {
         autoBattleEnabled = enabled;
 
-        // ÀÚµ¿ ÀüÅõ°¡ ºñÈ°¼ºÈ­µÈ °æ¿ì ÀÌµ¿ ¹× °ø°İ ÁßÁö
+        // ï¿½Úµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È°ï¿½ï¿½È­ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (!autoBattleEnabled)
         {
             agent.isStopped = true;
@@ -110,40 +114,46 @@ public class PlayerController : MonoBehaviour
     {
         if (Time.time >= nextAttackTime && targetEnemy != null)
         {
-            // °ø°İ ¾Ö´Ï¸ŞÀÌ¼Ç (³ªÁß¿¡ Ãß°¡)
+            // ê³µê²© ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ
+            if (animator != null)
+            {
+                animator.SetTrigger(PARAM_IS_ATTACKING);
+            }
 
-            // µ¥¹ÌÁö °è»ê
+            // ë°ë¯¸ì§€ ê³„ì‚°
             bool isCritical = damageCalculator.IsCritical();
             float damage = damageCalculator.CalculateDamage(attackDamage);
 
-            // µ¥¹ÌÁö Àû¿ë
+            // ë°ë¯¸ì§€ ì ìš©
             targetEnemy.GetComponent<EnemyController>()?.TakeDamage(damage);
 
-            // ´ÙÀ½ °ø°İ ½Ã°£ ¼³Á¤
+            // ê³µê²© í›„ ëŒ€ê¸° ì‹œê°„ ì„¤ì •
             nextAttackTime = Time.time + 1f / attackSpeed;
         }
     }
 
     public void TakeDamage(float damage)
     {
-        bool isCritical = Random.Range(0f, 100f) <= 10f; // 10% Å©¸®Æ¼ÄÃ È®·ü
+        if (isDead) return;
 
-        // µ¥¹ÌÁö Àû¿ë
+        bool isCritical = Random.Range(0f, 100f) <= 10f; // 10% í¬ë¦¬í‹°ì»¬ í™•ë¥ 
+
+        // ì²´ë ¥ ê°ì†Œ
         health -= damage;
 
-        // Ã¼·Â¹Ù ¾÷µ¥ÀÌÆ®
+        // Ã¼Â¹ Æ®
         if (healthBar != null)
         {
             healthBar.UpdateHealthBar(health, maxHealth);
         }
 
-        // µ¥¹ÌÁö ÅØ½ºÆ® Ç¥½Ã
+        // í”¼í•´ í…ìŠ¤íŠ¸ í‘œì‹œ
         if (DamageTextManager.instance != null)
         {
             DamageTextManager.instance.ShowDamageText(damage, transform.position + Vector3.up, isCritical);
         }
 
-        // ÇÇ°İ ÀÌÆåÆ® Àç»ı
+        // íˆíŠ¸ ì´í™íŠ¸ í‘œì‹œ
         if (EffectsManager.instance != null)
         {
             EffectsManager.instance.PlayHitEffect(transform.position + Vector3.up * 0.5f);
@@ -155,12 +165,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
-
     void Die()
     {
-        // »ç¸Á ·ÎÁ÷
-        Debug.Log("ÇÃ·¹ÀÌ¾î°¡ »ç¸ÁÇß½À´Ï´Ù.");
-        // ³ªÁß¿¡ °ÔÀÓ ¿À¹ö Ã³¸® ¶Ç´Â ºÎÈ° ·ÎÁ÷ Ãß°¡
+        isDead = true;
+        
+        // ì‚¬ë§ ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ
+        if (animator != null)
+        {
+            animator.SetBool(PARAM_IS_DEAD, true);
+        }
+
+        // NavMeshAgent ë¹„í™œì„±í™”
+        if (agent != null)
+        {
+            agent.enabled = false;
+        }
+
+        Debug.Log("í”Œë ˆì´ì–´ê°€ ì‚¬ë§í–ˆìŠµë‹ˆë‹¤.");
     }
 }

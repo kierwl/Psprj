@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6c15b845d7370d74eb6d41d82ce81ed2, type: 3}
-  m_Name: Slime 1
+  m_Name: SpinTurtle
   m_EditorClassIdentifier: 
   enemyID: 1
   enemyName: SpinTurtle

@@ -8,43 +8,44 @@ public class EnemySpawner : MonoBehaviour
     public int maxEnemies = 5;
     public float spawnRadius = 10f;
     public float spawnInterval = 3f;
-    public Transform[] customSpawnPoints; // »ç¿ëÀÚ ÁöÁ¤ ½ºÆù Æ÷ÀÎÆ® (¿É¼Ç)
+    public Transform[] customSpawnPoints; // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® (ï¿½É¼ï¿½)
+    public LayerMask obstacleLayer;
 
     [Header("Enemy Configuration")]
-    public List<EnemySpawnData> enemyTypes = new List<EnemySpawnData>(); // »ı¼ºÇÒ Àû À¯Çü ¸ñ·Ï
+    public List<EnemySpawnData> enemyTypes = new List<EnemySpawnData>(); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 
     [Header("Dynamic Settings")]
-    public bool usePlayerAsCenter = true; // ÇÃ·¹ÀÌ¾î ÁÖº¯ ½ºÆù ¿©ºÎ
-    public bool spawnOnStart = true;      // ½ÃÀÛ ½Ã ½ºÆù ¿©ºÎ
-    public bool limitEnemies = true;      // ÃÖ´ë Àû ¼ö Á¦ÇÑ ¿©ºÎ
+    public bool usePlayerAsCenter = true; // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Öºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    public bool spawnOnStart = true;      // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    public bool limitEnemies = true;      // ï¿½Ö´ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     [Header("Runtime References")]
     [SerializeField] private int currentEnemies = 0;
     private Transform player;
     private Coroutine spawnCoroutine;
-    private List<GameObject> spawnedEnemies = new List<GameObject>(); // »ı¼ºµÈ Àû ÃßÀû
+    private List<GameObject> spawnedEnemies = new List<GameObject>(); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-    // Àû ½ºÆù µ¥ÀÌÅÍ Å¬·¡½º
+    // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
     [System.Serializable]
     public class EnemySpawnData
     {
-        public EnemySO enemyData; // Àû ScriptableObject
-        public int weight = 1;    // ½ºÆù °¡ÁßÄ¡ (³ôÀ»¼ö·Ï ´õ ÀÚÁÖ µîÀå)
-        public int level = 1;     // Àû ·¹º§
+        public EnemySO enemyData; // ï¿½ï¿½ ScriptableObject
+        public int weight = 1;    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ä¡ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+        public int level = 1;     // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         [Range(0, 100)]
-        public int spawnChance = 100; // ½ºÆù È®·ü (%)
+        public int spawnChance = 100; // ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ (%)
     }
 
     void Start()
     {
-        // ÇÃ·¹ÀÌ¾î Ã£±â
+        // í”Œë ˆì´ì–´ ì°¾ê¸°
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
-        if (player == null && usePlayerAsCenter)
+        if (player == null)
         {
-            Debug.LogWarning("Player¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù. ½ºÆù ½Ã½ºÅÛÀÌ Á¦´ë·Î ÀÛµ¿ÇÏÁö ¾ÊÀ» ¼ö ÀÖ½À´Ï´Ù.");
+            Debug.LogWarning("í”Œë ˆì´ì–´ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
         }
 
-        // ½ÃÀÛ ½Ã ½ºÆù
+        //   
         if (spawnOnStart)
         {
             StartSpawning();
@@ -53,7 +54,7 @@ public class EnemySpawner : MonoBehaviour
 
     public void StartSpawning()
     {
-        // ÀÌ¹Ì ½ÇÇà ÁßÀÎ °æ¿ì Áßº¹ ½ÇÇà ¹æÁö
+        // ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ßºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (spawnCoroutine != null)
         {
             StopCoroutine(spawnCoroutine);
@@ -73,161 +74,88 @@ public class EnemySpawner : MonoBehaviour
 
     IEnumerator SpawnEnemies()
     {
-        // Àû »ı¼º À¯ÇüÀÌ ¾ø´Â °æ¿ì °æ°í
+        // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         if (enemyTypes.Count == 0)
         {
-            Debug.LogWarning("»ı¼ºÇÒ Àû À¯ÇüÀÌ ¼³Á¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogWarning("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½.");
             yield break;
         }
 
         while (true)
         {
-            // ÃÖ´ë Àû ¼ö Á¦ÇÑ È®ÀÎ
+            // ï¿½Ö´ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
             if (!limitEnemies || currentEnemies < maxEnemies)
             {
-                // Å¬¸°¾÷: Á¦°ÅµÈ Àû ÂüÁ¶ Á¤¸®
+                // Å¬ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½Åµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 CleanupDestroyedEnemies();
 
-                // Àû »ı¼º
+                // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 SpawnEnemy();
             }
 
-            // ´ÙÀ½ ½ºÆù±îÁö ´ë±â
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
             yield return new WaitForSeconds(spawnInterval);
         }
     }
 
     void SpawnEnemy()
     {
-        // ½ºÆù À§Ä¡ °áÁ¤
-        Vector3 spawnPosition;
-        if (customSpawnPoints != null && customSpawnPoints.Length > 0)
-        {
-            // »ç¿ëÀÚ ÁöÁ¤ ½ºÆù Æ÷ÀÎÆ® »ç¿ë
-            Transform spawnPoint = customSpawnPoints[Random.Range(0, customSpawnPoints.Length)];
-            spawnPosition = spawnPoint.position;
-        }
-        else if (usePlayerAsCenter && player != null)
-        {
-            // ÇÃ·¹ÀÌ¾î ÁÖº¯ ·£´ı À§Ä¡
-            Vector3 randomPos = player.position + Random.insideUnitSphere * spawnRadius;
-            randomPos.y = 0; // ¹Ù´Ú ³ôÀÌ·Î Á¶Á¤
+        // ìŠ¤í° ìœ„ì¹˜ ê³„ì‚°
+        Vector3 spawnPosition = CalculateSpawnPosition();
 
-            // NavMesh À§¿¡ À§Ä¡ ÁöÁ¤
-            UnityEngine.AI.NavMeshHit hit;
-            if (UnityEngine.AI.NavMesh.SamplePosition(randomPos, out hit, 10f, UnityEngine.AI.NavMesh.AllAreas))
-            {
-                spawnPosition = hit.position;
-            }
-            else
-            {
-                Debug.LogWarning("ÀûÇÕÇÑ NavMesh À§Ä¡¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
-                return;
-            }
-        }
-        else
-        {
-            // ½ºÆ÷³Ê ÁÖº¯ ·£´ı À§Ä¡
-            Vector3 randomPos = transform.position + Random.insideUnitSphere * spawnRadius;
-            randomPos.y = 0;
+        // ì  ì˜¤ë¸Œì íŠ¸ ì¸ìŠ¤í„´ìŠ¤í™”
+        GameObject enemy = Instantiate(enemyTypes[0].enemyData.prefab, spawnPosition, Quaternion.identity);
 
-            // NavMesh À§¿¡ À§Ä¡ ÁöÁ¤
-            UnityEngine.AI.NavMeshHit hit;
-            if (UnityEngine.AI.NavMesh.SamplePosition(randomPos, out hit, 10f, UnityEngine.AI.NavMesh.AllAreas))
-            {
-                spawnPosition = hit.position;
-            }
-            else
-            {
-                Debug.LogWarning("ÀûÇÕÇÑ NavMesh À§Ä¡¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
-                return;
-            }
+        // ì  ì»¨íŠ¸ë¡¤ëŸ¬ ì´ˆê¸°í™”
+        EnemyController enemyController = enemy.GetComponent<EnemyController>();
+        if (enemyController != null)
+        {
+            enemyController.Initialize(enemyTypes[0].enemyData, enemyTypes[0].level);
+            enemyController.OnDeathEvent += () => OnEnemyDeath(enemy);
         }
 
-        // °¡ÁßÄ¡ ±â¹İ Àû À¯Çü ¼±ÅÃ
-        EnemySpawnData selectedEnemyData = SelectEnemyToSpawn();
-        if (selectedEnemyData == null || selectedEnemyData.enemyData == null)
-        {
-            Debug.LogWarning("¼±ÅÃÇÒ Àû À¯ÇüÀÌ ¾ø½À´Ï´Ù.");
-            return;
-        }
-
-        // ½ºÆù È®·ü Ã¼Å©
-        if (Random.Range(0, 100) >= selectedEnemyData.spawnChance)
-        {
-            return; // ½ºÆù È®·ü ½ÇÆĞ
-        }
-
-        // Àû »ı¼º - EnemyFactory »ç¿ë (°¡´ÉÇÑ °æ¿ì)
-        GameObject enemy;
-
-        if (EnemyFactory.instance != null)
-        {
-            // EnemyFactory¸¦ ÅëÇØ »ı¼º
-            enemy = EnemyFactory.instance.SpawnEnemy(
-                selectedEnemyData.enemyData,
-                selectedEnemyData.level,
-                spawnPosition
-            );
-        }
-        else
-        {
-            // Á÷Á¢ »ı¼º (EnemyFactory°¡ ¾ø´Â °æ¿ì)
-            enemy = CreateEnemyDirectly(selectedEnemyData, spawnPosition);
-        }
-
-        if (enemy != null)
-        {
-            // »ı¼ºµÈ Àû ÃßÀû
-            spawnedEnemies.Add(enemy);
-            currentEnemies++;
-
-            // »ç¸Á ÀÌº¥Æ® ¿¬°á
-            EnemyController enemyController = enemy.GetComponent<EnemyController>();
-            if (enemyController != null)
-            {
-                enemyController.OnDeathEvent += () => OnEnemyDeath(enemy);
-            }
-        }
+        // ìŠ¤í°ëœ ì  ëª©ë¡ì— ì¶”ê°€
+        spawnedEnemies.Add(enemy);
+        currentEnemies++;
     }
 
-    private GameObject CreateEnemyDirectly(EnemySpawnData spawnData, Vector3 position)
+    // ìŠ¤í° ìœ„ì¹˜ ê³„ì‚°
+    private Vector3 CalculateSpawnPosition()
     {
-        // ÇÁ¸®ÆÕ °áÁ¤
-        GameObject prefab = spawnData.enemyData.prefab;
-        if (prefab == null)
-        {
-            Debug.LogError($"Àû µ¥ÀÌÅÍ '{spawnData.enemyData.name}'¿¡ ÇÁ¸®ÆÕÀÌ ¼³Á¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.");
-            return null;
-        }
+        if (player == null) return transform.position;
 
-        // Àû ÀÎ½ºÅÏ½º »ı¼º
-        GameObject enemy = Instantiate(prefab, position, Quaternion.identity);
+        // í”Œë ˆì´ì–´ ì£¼ë³€ì˜ ëœë¤í•œ ìœ„ì¹˜ ê³„ì‚°
+        float randomAngle = Random.Range(0f, 360f);
+        float randomDistance = Random.Range(spawnRadius * 0.5f, spawnRadius);
+        
+        Vector3 randomOffset = Quaternion.Euler(0, randomAngle, 0) * Vector3.forward * randomDistance;
+        Vector3 spawnPosition = player.position + randomOffset;
 
-        // Àû ÄÁÆ®·Ñ·¯ ÃÊ±âÈ­
-        EnemyController controller = enemy.GetComponent<EnemyController>();
-        if (controller != null)
+        // NavMesh ìœ„ì˜ ìœ íš¨í•œ ìœ„ì¹˜ ì°¾ê¸°
+        UnityEngine.AI.NavMeshHit hit;
+        if (UnityEngine.AI.NavMesh.SamplePosition(spawnPosition, out hit, spawnRadius, UnityEngine.AI.NavMesh.AllAreas))
         {
-            controller.Initialize(spawnData.enemyData, spawnData.level);
+            spawnPosition = hit.position;
         }
         else
         {
-            Debug.LogError($"»ı¼ºµÈ Àû '{enemy.name}'¿¡ EnemyController ÄÄÆ÷³ÍÆ®°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("ìŠ¤í° ìœ„ì¹˜ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            return transform.position;
         }
 
-        return enemy;
+        return spawnPosition;
     }
 
     private EnemySpawnData SelectEnemyToSpawn()
     {
-        // °¡ÁßÄ¡ ÇÕ°è °è»ê
+        // Ä¡ Õ°ï¿½ ï¿½ï¿½ï¿½
         int totalWeight = 0;
         foreach (var enemyType in enemyTypes)
         {
             totalWeight += enemyType.weight;
         }
 
-        // °¡ÁßÄ¡ ±â¹İ ·£´ı ¼±ÅÃ
+        // ï¿½ï¿½ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         int randomValue = Random.Range(0, totalWeight);
         int currentWeight = 0;
 
@@ -240,23 +168,23 @@ public class EnemySpawner : MonoBehaviour
             }
         }
 
-        // ±âº»°ªÀ¸·Î Ã¹ ¹øÂ° Àû ¹İÈ¯
+        // ï¿½âº»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¹ ï¿½ï¿½Â° ï¿½ï¿½ ï¿½ï¿½È¯
         return enemyTypes.Count > 0 ? enemyTypes[0] : null;
     }
 
     private void OnEnemyDeath(GameObject enemy)
     {
-        // Àû Ä«¿îÅÍ °¨¼Ò
         if (spawnedEnemies.Contains(enemy))
         {
             spawnedEnemies.Remove(enemy);
             currentEnemies--;
+            Debug.Log($"ì  ì‚¬ë§: {enemy.name}");
         }
     }
 
     private void CleanupDestroyedEnemies()
     {
-        // null ÂüÁ¶ Á¦°Å
+        // null  
         for (int i = spawnedEnemies.Count - 1; i >= 0; i--)
         {
             if (spawnedEnemies[i] == null)
@@ -267,7 +195,7 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    // ¸ğµç Àû Á¦°Å
+    // ëª¨ë“  ì  ì œê±°
     public void ClearAllEnemies()
     {
         foreach (var enemy in spawnedEnemies)
@@ -282,16 +210,22 @@ public class EnemySpawner : MonoBehaviour
         currentEnemies = 0;
     }
 
-    // ÇöÀç Àû ¼ö ¹İÈ¯
+    // í˜„ì¬ ìŠ¤í°ëœ ì  ìˆ˜ ë°˜í™˜
     public int GetCurrentEnemyCount()
     {
         return currentEnemies;
     }
 
-    // ¿¡µğÅÍ¿¡¼­ ½Ã°¢È­
+    // ìŠ¤í° ê°€ëŠ¥ ì—¬ë¶€ í™•ì¸
+    public bool CanSpawn()
+    {
+        return currentEnemies < maxEnemies;
+    }
+
+    //    È¯
     private void OnDrawGizmosSelected()
     {
-        // ½ºÆù ¹üÀ§ ½Ã°¢È­
+        //  Ã°È­
         Gizmos.color = new Color(1f, 0.5f, 0, 0.2f);
 
         if (usePlayerAsCenter && Application.isPlaying && player != null)
@@ -303,7 +237,7 @@ public class EnemySpawner : MonoBehaviour
             Gizmos.DrawSphere(transform.position, spawnRadius);
         }
 
-        // ½ºÆù Æ÷ÀÎÆ® ½Ã°¢È­
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ã°ï¿½È­
         if (customSpawnPoints != null)
         {
             Gizmos.color = Color.green;
@@ -315,5 +249,40 @@ public class EnemySpawner : MonoBehaviour
                 }
             }
         }
+    }
+
+    // StageManagerì—ì„œ í˜¸ì¶œí•˜ëŠ” ìŠ¤í° ë©”ì„œë“œ
+    public void SpawnEnemy(EnemySO enemyData, int level)
+    {
+        if (enemyData == null || enemyData.prefab == null)
+        {
+            Debug.LogError($"ì  í”„ë¦¬íŒ¹ì´ ì—†ìŠµë‹ˆë‹¤: {enemyData?.name ?? "null"}");
+            return;
+        }
+
+        // ìŠ¤í° ìœ„ì¹˜ ê³„ì‚°
+        Vector3 spawnPosition = CalculateSpawnPosition();
+
+        // ì  ì˜¤ë¸Œì íŠ¸ ì¸ìŠ¤í„´ìŠ¤í™”
+        GameObject enemy = Instantiate(enemyData.prefab, spawnPosition, Quaternion.identity);
+
+        // ì  ì»¨íŠ¸ë¡¤ëŸ¬ ì´ˆê¸°í™”
+        EnemyController enemyController = enemy.GetComponent<EnemyController>();
+        if (enemyController != null)
+        {
+            enemyController.Initialize(enemyData, level);
+            enemyController.OnDeathEvent += () => OnEnemyDeath(enemy);
+        }
+        else
+        {
+            Debug.LogError($"EnemyControllerê°€ ì—†ìŠµë‹ˆë‹¤: {enemy.name}");
+            return;
+        }
+
+        // ìŠ¤í°ëœ ì  ëª©ë¡ì— ì¶”ê°€
+        spawnedEnemies.Add(enemy);
+        currentEnemies++;
+
+        Debug.Log($"ì  ìŠ¤í°: {enemyData.name} (ë ˆë²¨ {level})");
     }
 }

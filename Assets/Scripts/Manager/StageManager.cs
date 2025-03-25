@@ -8,7 +8,7 @@ public class StageManager : MonoBehaviour
 
     [Header("Stage References")]
     public StageSO currentStage;
-    public Transform[] spawnPoints;
+    public EnemySpawner enemySpawner;
     public Transform bossSpawnPoint;
 
     [Header("Stage Runtime")]
@@ -18,7 +18,6 @@ public class StageManager : MonoBehaviour
     public bool bossDefeated = false;
     public float stageTimer = 0f;
 
-    private List<GameObject> spawnedEnemies = new List<GameObject>();
     private GameObject spawnedBoss;
     private Coroutine spawnCoroutine;
 
@@ -79,8 +78,8 @@ public class StageManager : MonoBehaviour
                     // 한번에 모두 스폰
                     for (int i = 0; i < spawnData.count; i++)
                     {
-                        SpawnEnemy(spawnData.enemyData, spawnData.level);
-                        yield return new WaitForSeconds(0.2f); // 간격 조절
+                        enemySpawner.SpawnEnemy(spawnData.enemyData, spawnData.level);
+                        yield return new WaitForSeconds(0.2f);
                     }
                     break;
 
@@ -88,7 +87,7 @@ public class StageManager : MonoBehaviour
                     // 순차적으로 스폰
                     for (int i = 0; i < spawnData.count; i++)
                     {
-                        SpawnEnemy(spawnData.enemyData, spawnData.level);
+                        enemySpawner.SpawnEnemy(spawnData.enemyData, spawnData.level);
                         yield return new WaitForSeconds(spawnData.spawnInterval);
                     }
                     break;
@@ -101,7 +100,7 @@ public class StageManager : MonoBehaviour
                         int enemiesInWave = Mathf.Min(3, spawnData.count - (wave * 3));
                         for (int i = 0; i < enemiesInWave; i++)
                         {
-                            SpawnEnemy(spawnData.enemyData, spawnData.level);
+                            enemySpawner.SpawnEnemy(spawnData.enemyData, spawnData.level);
                             yield return new WaitForSeconds(0.2f);
                         }
 
@@ -134,38 +133,13 @@ public class StageManager : MonoBehaviour
         }
     }
 
-    // 일반 적 스폰
-    private void SpawnEnemy(EnemySO enemyData, int level)
-    {
-        if (enemyData == null || enemyData.prefab == null) return;
-
-        // 스폰 위치 선택
-        Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-
-        // 적 오브젝트 인스턴스화
-        GameObject enemy = Instantiate(enemyData.prefab, spawnPoint.position, spawnPoint.rotation);
-
-        // 적 컨트롤러 초기화
-        EnemyController enemyController = enemy.GetComponent<EnemyController>();
-        if (enemyController != null)
-        {
-            enemyController.Initialize(enemyData, level);
-
-            // 죽음 이벤트 연결
-            enemyController.OnDeathEvent += OnEnemyKilled;
-        }
-
-        // 스폰된 적 목록에 추가
-        spawnedEnemies.Add(enemy);
-    }
-
     // 보스 스폰
     private void SpawnBoss(EnemySO bossData, int level)
     {
         if (bossData == null || bossData.prefab == null) return;
 
         // 보스 스폰 위치
-        Transform spawnPoint = bossSpawnPoint != null ? bossSpawnPoint : spawnPoints[0];
+        Transform spawnPoint = bossSpawnPoint != null ? bossSpawnPoint : enemySpawner.transform;
 
         // 보스 오브젝트 인스턴스화
         spawnedBoss = Instantiate(bossData.prefab, spawnPoint.position, spawnPoint.rotation);
@@ -175,8 +149,6 @@ public class StageManager : MonoBehaviour
         if (bossController != null)
         {
             bossController.Initialize(bossData, level);
-
-            // 죽음 이벤트 연결
             bossController.OnDeathEvent += OnBossKilled;
         }
     }
@@ -185,11 +157,7 @@ public class StageManager : MonoBehaviour
     private void OnEnemyKilled()
     {
         enemiesKilled++;
-
-        // UI 업데이트
         UpdateStageUI();
-
-        // 스테이지 클리어 조건 확인
         CheckStageClear();
     }
 
@@ -197,11 +165,7 @@ public class StageManager : MonoBehaviour
     private void OnBossKilled()
     {
         bossDefeated = true;
-
-        // UI 업데이트
         UpdateStageUI();
-
-        // 스테이지 클리어 조건 확인
         CheckStageClear();
     }
 
@@ -287,12 +251,7 @@ public class StageManager : MonoBehaviour
         }
 
         // 스폰된 적 제거
-        foreach (var enemy in spawnedEnemies)
-        {
-            if (enemy != null)
-                Destroy(enemy);
-        }
-        spawnedEnemies.Clear();
+        enemySpawner.ClearAllEnemies();
 
         // 보스 제거
         if (spawnedBoss != null)

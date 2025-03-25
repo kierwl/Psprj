@@ -29,9 +29,8 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>();  // ���߿� �߰��� �ִϸ�����
+        animator = GetComponentInChildren<Animator>();
 
-        // ü�¹� ����
         if (healthBarPrefab != null)
         {
             GameObject healthBarObj = Instantiate(healthBarPrefab, transform.position, Quaternion.identity);
@@ -106,6 +105,7 @@ public class PlayerController : MonoBehaviour
     {
         if (targetEnemy != null && agent != null)
         {
+            animator.SetBool(PARAM_IS_ATTACKING, false);
             agent.SetDestination(targetEnemy.transform.position);
         }
     }
@@ -117,7 +117,7 @@ public class PlayerController : MonoBehaviour
             // 공격 애니메이션 재생
             if (animator != null)
             {
-                animator.SetTrigger(PARAM_IS_ATTACKING);
+                animator.SetBool(PARAM_IS_ATTACKING,true);
             }
 
             // 데미지 계산

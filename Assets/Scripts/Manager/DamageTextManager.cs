@@ -7,6 +7,7 @@ public class DamageTextManager : MonoBehaviour
     public static DamageTextManager instance;
 
     public GameObject damageTextPrefab;
+    public Canvas damageIndicatorCanvas; // DamageIndicator 캔버스 참조 추가
     public float fadeSpeed = 2f;
     public float riseSpeed = 1f;
     public float lifetime = 1f;
@@ -23,7 +24,7 @@ public class DamageTextManager : MonoBehaviour
     public void ShowDamageText(float damage, Vector3 position, bool isCritical = false)
     {
         // 데미지 텍스트 생성
-        GameObject textObj = Instantiate(damageTextPrefab, position + Vector3.up, Quaternion.identity);
+        GameObject textObj = Instantiate(damageTextPrefab, position + Vector3.up, Quaternion.identity, damageIndicatorCanvas.transform); // 부모 설정
         TextMeshProUGUI textMesh = textObj.GetComponent<TextMeshProUGUI>();
 
         // 텍스트 내용 설정

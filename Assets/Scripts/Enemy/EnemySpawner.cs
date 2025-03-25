@@ -49,7 +49,7 @@ public class EnemySpawner : MonoBehaviour
                 GameObject enemy = Instantiate(enemyPrefab, hit.position, Quaternion.identity);
 
                 // 사망 시 카운트 감소하는 이벤트 추가 (간단한 버전)
-                Destroy(enemy, 30f);  // 30초 후 자동 제거 (테스트용)
+                //Destroy(enemy, 30f);  // 30초 후 자동 제거 (테스트용)
             }
         }
     }

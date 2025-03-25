@@ -2,11 +2,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using System.Linq;
+using System;
+
+// CharacterManager의 CharacterData 클래스를 참조하기 위한 using 문
+using static CharacterManager;
 
 public class InventoryPanelUI : MonoBehaviour
 {
     [Header("Panel References")]
-    [SerializeField] private GameObject inventoryPanel;
     [SerializeField] private Button closeButton;
     [SerializeField] private TabGroup tabGroup;
 
@@ -117,17 +121,22 @@ public class InventoryPanelUI : MonoBehaviour
         if (tabGroup != null)
             tabGroup.Initialize(this);
 
-        // 아이템 그리드 초기화
+    }
+
+    private void OnEnable()
+    {
         if (itemGridContainer != null && itemSlotPrefab != null)
+        {
             InitializeItemGrid();
+        }
+    }
 
-        // 아이템 상세 패널 초기화
-        if (itemDetailPanel != null)
-            itemDetailPanel.SetActive(false);
-
-        // 패널 초기화
-        if (inventoryPanel != null)
-            inventoryPanel.SetActive(false);
+    private void OnDisable()
+    {
+        Debug.Log("=== InventoryPanelUI OnDisable 시작 ===");
+        Debug.Log($"현재 패널 활성화 상태: {gameObject.activeSelf}");
+        Debug.Log($"스택 트레이스: {System.Environment.StackTrace}");
+        Debug.Log("=== InventoryPanelUI OnDisable 종료 ===");
     }
 
     private void InitializeItemGrid()
@@ -140,32 +149,49 @@ public class InventoryPanelUI : MonoBehaviour
         itemSlots.Clear();
 
         // 새로운 아이템 그리드 초기화
-        for (int i = 0; i < gridColumns * gridRows; i++)
+        int totalSlots = gridColumns * gridRows;
+        for (int i = 0; i < totalSlots; i++)
         {
             GameObject slotObj = Instantiate(itemSlotPrefab, itemGridContainer);
+            slotObj.SetActive(true);
+
+            Transform iconTransform = slotObj.transform.Find("Icon");
+            Transform levelTextTransform = slotObj.transform.Find("LevelText");
+            Transform equippedIndicatorTransform = slotObj.transform.Find("EquippedIndicator");
+
+            if (iconTransform == null || levelTextTransform == null || equippedIndicatorTransform == null)
+            {
+                continue;
+            }
+
+            // 각 컴포넌트 활성화
+            iconTransform.gameObject.SetActive(true);
+            levelTextTransform.gameObject.SetActive(true);
+            equippedIndicatorTransform.gameObject.SetActive(false);
 
             ItemSlot slot = new ItemSlot
             {
                 slotObject = slotObj,
-                itemIcon = slotObj.transform.Find("Icon").GetComponent<Image>(),
+                itemIcon = iconTransform.GetComponent<Image>(),
                 frameImage = slotObj.GetComponent<Image>(),
-                levelText = slotObj.transform.Find("LevelText").GetComponent<TextMeshProUGUI>(),
-                equippedIndicator = slotObj.transform.Find("EquippedIndicator").gameObject
+                levelText = levelTextTransform.GetComponent<TextMeshProUGUI>(),
+                equippedIndicator = equippedIndicatorTransform.gameObject
             };
 
-            // 기본 아이템 표시 초기화
-            slot.itemIcon.gameObject.SetActive(false);
-            slot.levelText.gameObject.SetActive(false);
-            slot.equippedIndicator.SetActive(false);
-
-            // 추가 이벤트 초기화
-            int slotIndex = i;
+            // 버튼 컴포넌트 설정
             Button button = slotObj.GetComponent<Button>();
             if (button != null)
+            {
+                int slotIndex = i;
                 button.onClick.AddListener(() => OnItemSlotClicked(slotIndex));
+            }
 
             itemSlots.Add(slot);
         }
+
+        // 레이아웃 업데이트
+        LayoutRebuilder.ForceRebuildLayoutImmediate(itemGridContainer.GetComponent<RectTransform>());
+        Canvas.ForceUpdateCanvases();
     }
 
     public void ShowItemsOfType(EquipmentType type)
@@ -197,9 +223,15 @@ public class InventoryPanelUI : MonoBehaviour
         // 기존 아이템 상태 초기화
         foreach (var slot in itemSlots)
         {
-            slot.itemIcon.gameObject.SetActive(false);
-            slot.levelText.gameObject.SetActive(false);
-            slot.equippedIndicator.SetActive(false);
+            slot.slotObject.SetActive(true);
+
+            if (items.Count == 0)
+            {
+                // 아이템이 없는 경우에만 아이콘과 텍스트 비활성화
+                slot.itemIcon.gameObject.SetActive(false);
+                slot.levelText.gameObject.SetActive(false);
+                slot.equippedIndicator.SetActive(false);
+            }
         }
 
         // 아이템 데이터를 기반으로 그리드 업데이트
@@ -208,6 +240,7 @@ public class InventoryPanelUI : MonoBehaviour
             EquipmentData item = items[i];
             ItemSlot slot = itemSlots[i];
 
+            // 아이템이 있는 경우 활성화
             slot.itemIcon.gameObject.SetActive(true);
             slot.itemIcon.sprite = item.icon;
 
@@ -242,23 +275,23 @@ public class InventoryPanelUI : MonoBehaviour
 
     private void OnItemSlotClicked(int slotIndex)
     {
-        // 선택된 아이템 타입에 따라 아이템 리스트 가져오기
+        Debug.Log($"슬롯 클릭됨: Index={slotIndex}");
+
         EquipmentType currentType = GetCurrentSelectedType();
         List<EquipmentData> items;
 
-        if (currentType == EquipmentType.Helmet) // 가상 아이템인 경우
-            items = new List<EquipmentData>(); // 가상 아이템 (더미)
+        if (currentType == EquipmentType.Helmet)
+            items = new List<EquipmentData>();
         else
             items = EquipmentManager.instance.GetItemsByType(currentType);
 
-        // 인덱스 유효성 확인
         if (slotIndex >= items.Count)
+        {
+            Debug.LogError($"유효하지 않은 슬롯 인덱스: {slotIndex}");
             return;
+        }
 
-        // 선택된 아이템 가져오기
         selectedItem = items[slotIndex];
-
-        // 아이템 상세 표시
         ShowItemDetail(selectedItem);
     }
 
@@ -359,17 +392,25 @@ public class InventoryPanelUI : MonoBehaviour
         if (selectedItem == null)
             return;
 
+        // 현재 선택된 캐릭터가 없으면 리턴
+        CharacterData currentCharacter = CharacterManager.instance.GetCurrentCharacter();
+        if (currentCharacter == null)
+        {
+            Debug.LogWarning("장비를 장착할 캐릭터가 선택되지 않았습니다.");
+            return;
+        }
+
         bool isEquipped = EquipmentManager.instance.IsEquipped(selectedItem);
 
         if (isEquipped)
         {
             // 아이템 해제
-            EquipmentManager.instance.UnequipItem(CharacterManager.instance.currentCharacterId, selectedItem);
+            EquipmentManager.instance.UnequipItem(currentCharacter.id, selectedItem);
         }
         else
         {
             // 아이템 장착
-            EquipmentManager.instance.EquipItem(CharacterManager.instance.currentCharacterId, selectedItem);
+            EquipmentManager.instance.EquipItem(currentCharacter.id, selectedItem);
         }
 
         // UI 업데이트
@@ -390,6 +431,7 @@ public class InventoryPanelUI : MonoBehaviour
 
     public void ClosePanel()
     {
+        Debug.Log("ClosePanel 호출됨");
         gameObject.SetActive(false);
     }
 }

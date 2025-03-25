@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdcbf34498c31644dac80b2ba57ac16a, type: 3}
+  m_Name: 1Stage
+  m_EditorClassIdentifier: 
+  stageID: 0
+  stageName: "\uBA54\uB9C8\uB978\uD611\uACE1"
+  description: 
+  stageIcon: {fileID: 0}
+  stageEnvironment: {fileID: 0}
+  recommendedLevel: 0
+  staminaCost: 10
+  timeLimitInSeconds: 180
+  hasTimerLimit: 0
+  enemySpawns:
+  - enemyData: {fileID: 11400000, guid: 9bdbff9bb5cda704caa10e5ef207b566, type: 2}
+    count: 20
+    level: 1
+    spawnInterval: 10
+    spawnMethod: 0
+  bossSpawn:
+    bossData: {fileID: 0}
+    level: 1
+    spawnDelay: 5
+    introDialogue: 
+  hasBoss: 0
+  baseExpReward: 0
+  baseGoldReward: 0
+  gemDropChance: 0.1
+  gemAmount: 1
+  guaranteedDrops: []
+  possibleDrops: []
+  isSpecialStage: 0
+  isEventStage: 0
+  isUnlocked: 0
+  unlockCondition: 

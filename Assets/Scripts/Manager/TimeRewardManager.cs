@@ -1,4 +1,4 @@
-// ½Ã°£ ¹× º¸»ó °ü¸®ÀÚ
+// ì‹œê°„ ë³´ìƒ ê´€ë¦¬
 using UnityEngine;
 using TMPro;
 using System;
@@ -10,14 +10,15 @@ public class TimeRewardManager : MonoBehaviour
     [Header("Reward Settings")]
     public int rewardGold = 100;
     public int rewardGems = 5;
-    public float rewardInterval = 4 * 60 * 60;  // 4½Ã°£(ÃÊ ´ÜÀ§)
+    public float rewardInterval = 4 * 60 * 60;  // 4ì‹œê°„(ìµœëŒ€ ì˜¤í”„ë¼ì¸ ì‹œê°„)
+    public float maxOfflineTime = 86400f; // 24ì‹œê°„
 
     [Header("UI References")]
     public TextMeshProUGUI timerText;
     public GameObject rewardButton;
 
-    private float lastRewardTime;
-    private float remainingTime;
+    private DateTime lastRewardTime;
+    private DateTime lastSaveTime;
 
     private void Awake()
     {
@@ -25,14 +26,36 @@ public class TimeRewardManager : MonoBehaviour
             instance = this;
         else
             Destroy(gameObject);
-
-        // ¸¶Áö¸· º¸»ó ½Ã°£ ·Îµå (ÇÃ·¹ÀÌ¾îÇÁ¸®ÆÕ »ç¿ë ¿¹Á¤)
-        lastRewardTime = PlayerPrefs.GetFloat("LastRewardTime", 0);
     }
 
     private void Start()
     {
-        UpdateRewardStatus();
+        LoadLastSaveTime();
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            SaveLastSaveTime();
+        }
+        else
+        {
+            LoadLastSaveTime();
+        }
+    }
+
+    private void SaveLastSaveTime()
+    {
+        lastSaveTime = DateTime.Now;
+        PlayerPrefs.SetString("LastSaveTime", lastSaveTime.ToString());
+    }
+
+    private void LoadLastSaveTime()
+    {
+        string savedTime = PlayerPrefs.GetString("LastSaveTime", DateTime.Now.ToString());
+        lastSaveTime = DateTime.Parse(savedTime);
+        lastRewardTime = lastSaveTime;
     }
 
     private void Update()
@@ -43,46 +66,55 @@ public class TimeRewardManager : MonoBehaviour
 
     private void UpdateRewardStatus()
     {
-        // ¸¶Áö¸· º¸»ó ÀÌÈÄ °æ°ú ½Ã°£ °è»ê
-        float currentTime = Time.time;
-        float elapsedTime = currentTime - lastRewardTime;
+        // ìµœëŒ€ ì˜¤í”„ë¼ì¸ ì‹œê°„ ì´ˆê³¼ ì—¬ë¶€ í™•ì¸
+        TimeSpan timeSinceLastReward = DateTime.Now - lastRewardTime;
+        float remainingTime = rewardInterval - (float)timeSinceLastReward.TotalSeconds;
 
-        // ³²Àº ½Ã°£ °è»ê
-        remainingTime = Mathf.Max(0, rewardInterval - elapsedTime);
-
-        // º¸»ó ¹öÆ° È°¼ºÈ­ ¿©ºÎ °áÁ¤
+        // ìµœëŒ€ ì˜¤í”„ë¼ì¸ ì‹œê°„ ì´ˆê³¼ ì‹œ ë³´ìƒ ë²„íŠ¼ ë¹„í™œì„±í™”
         if (rewardButton != null)
             rewardButton.SetActive(remainingTime <= 0);
     }
 
     private void UpdateTimerUI()
     {
-        if (timerText != null && remainingTime > 0)
+        if (timerText != null && GetRemainingTime() > 0)
         {
-            TimeSpan timeSpan = TimeSpan.FromSeconds(remainingTime);
+            TimeSpan timeSpan = TimeSpan.FromSeconds(GetRemainingTime());
             timerText.text = string.Format("{0:D2}:{1:D2}:{2:D2}",
                 timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
         }
         else if (timerText != null)
         {
-            timerText.text = "º¸»ó ÁØºñ ¿Ï·á!";
+            timerText.text = "ì˜¤í”„ë¼ì¸ ì‹œê°„ì„ ì´ˆê³¼í–ˆìŠµë‹ˆë‹¤!";
         }
+    }
+
+    public float GetRemainingTime()
+    {
+        TimeSpan timeSinceLastReward = DateTime.Now - lastRewardTime;
+        float remainingTime = rewardInterval - (float)timeSinceLastReward.TotalSeconds;
+        return Mathf.Max(0f, remainingTime);
     }
 
     public void ClaimReward()
     {
-        if (remainingTime <= 0)
+        if (CanClaimReward())
         {
-            // º¸»ó Áö±Ş
+            // ë³´ìƒ ì§€ê¸‰
             CurrencyManager.instance?.AddGold(rewardGold);
             CurrencyManager.instance?.AddGems(rewardGems);
 
-            // ¸¶Áö¸· º¸»ó ½Ã°£ ¾÷µ¥ÀÌÆ®
-            lastRewardTime = Time.time;
-            PlayerPrefs.SetFloat("LastRewardTime", lastRewardTime);
+            // ë³´ìƒ ì§€ê¸‰ í›„ ë³´ìƒ ì§€ê¸‰ ì‹œê°„ ê°±ì‹ 
+            lastRewardTime = DateTime.Now;
+            SaveLastSaveTime();
 
-            // È¿°ú ¹× ¾Ë¸²
-            Debug.Log("º¸»ó ¼ö·É: °ñµå " + rewardGold + ", º¸¼® " + rewardGems);
+            // ë¡œê·¸ ì¶œë ¥
+            Debug.Log("ë³´ìƒ ì§€ê¸‰: ê³¨ë“œ " + rewardGold + ", ì ¬ìŠ¤ " + rewardGems);
         }
+    }
+
+    public bool CanClaimReward()
+    {
+        return GetRemainingTime() <= 0f;
     }
 }

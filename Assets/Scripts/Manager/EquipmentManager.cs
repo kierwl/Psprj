@@ -249,4 +249,10 @@ public class EquipmentManager : MonoBehaviour
         }
         return false;
     }
+
+    // 새로운 아이템이 있는지 확인
+    public bool HasNewItems()
+    {
+        return false;
+    }
 }

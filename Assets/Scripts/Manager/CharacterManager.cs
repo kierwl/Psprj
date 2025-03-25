@@ -10,6 +10,7 @@ public class CharacterManager : MonoBehaviour
 
     [Header("Character Settings")]
     public string currentCharacterId; // 현재 선택된 캐릭터 ID
+    public List<CharacterData> characters = new List<CharacterData>(); // 캐릭터 목록
 
     [System.Serializable]
     public class CharacterData
@@ -18,32 +19,32 @@ public class CharacterManager : MonoBehaviour
         public string name;
         public string description;
         public int level = 1;
-        public int stars = 1; // ��� (1-5��)
-        public CharacterType type; // ĳ���� Ÿ�� (��Ŀ, ����, ������ ��)
+        public int stars = 1; // 등급 (1-5등)
+        public CharacterType type; // 캐릭터 타입 (탱크, 딜러, 서포터 등)
         public Sprite icon;
         public GameObject prefab;
         public bool isUnlocked;
         public bool isActive;
 
-        // �⺻ ����
+        // 기본 스탯
         public float baseHealth = 100f;
         public float baseAttack = 10f;
         public float baseDefense = 5f;
         public float baseSpeed = 1f;
 
-        // ������ ���� ������
+        // 레벨당 증가 스탯
         public float healthPerLevel = 10f;
         public float attackPerLevel = 1f;
         public float defensePerLevel = 0.5f;
         public float speedPerLevel = 0.02f;
 
-        // ���� ������ ���� ���
+        // 현재 레벨의 스탯
         public float GetCurrentHealth() => baseHealth + (level - 1) * healthPerLevel;
         public float GetCurrentAttack() => baseAttack + (level - 1) * attackPerLevel;
         public float GetCurrentDefense() => baseDefense + (level - 1) * defensePerLevel;
         public float GetCurrentSpeed() => baseSpeed + (level - 1) * speedPerLevel;
 
-        // ��ȭ ��� ���
+        // 레벨업 비용
         public int GetUpgradeCost() => 100 * level * stars;
     }
 
@@ -56,7 +57,6 @@ public class CharacterManager : MonoBehaviour
         Healer
     }
 
-    public List<CharacterData> characters = new List<CharacterData>();
     public int maxActiveCharacters = 4;
 
     [Header("UI References")]
@@ -122,46 +122,47 @@ public class CharacterManager : MonoBehaviour
             Button button = slot.GetComponent<Button>();
             if (button != null)
             {
-                button.onClick.AddListener(() => ToggleCharacter(characterIndex));
+                button.onClick.AddListener(() => ToggleCharacter(characters[i].id));
             }
         }
     }
 
-    public void ToggleCharacter(int index)
+    public void ToggleCharacter(string characterId)
     {
-        if (index < 0 || index >= characters.Count)
+        CharacterData character = GetCharacterById(characterId);
+        if (character == null)
             return;
 
-        // ��� ������ ĳ���͸� ��� ����
-        if (!characters[index].isUnlocked)
+        // 잠금된 캐릭터는 토글 불가
+        if (!character.isUnlocked)
             return;
 
-        // Ȱ�� ���� ���
-        if (characters[index].isActive)
+        // 활성 상태 토글
+        if (character.isActive)
         {
-            characters[index].isActive = false;
+            character.isActive = false;
         }
         else
         {
-            // Ȱ�� ĳ���� �� Ȯ��
+            // 활성 캐릭터 수 확인
             int activeCount = 0;
-            foreach (CharacterData character in characters)
+            foreach (CharacterData c in characters)
             {
-                if (character.isActive)
+                if (c.isActive)
                     activeCount++;
             }
 
-            // �ִ� Ȱ�� ĳ���� ���� �ʰ����� �ʴ� ��쿡�� Ȱ��ȭ
+            // 최대 활성 캐릭터 수를 초과하지 않으면 활성화
             if (activeCount < maxActiveCharacters)
-                characters[index].isActive = true;
+                character.isActive = true;
             else
-                Debug.Log("Ȱ�� ĳ���� ���� �ִ�ġ�� �����߽��ϴ�.");
+                Debug.Log("활성 캐릭터 수가 최대치를 초과합니다.");
         }
 
-        // UI ������Ʈ
+        // UI 업데이트
         InitializeCharacterUI();
 
-        // Ȱ�� ĳ���� �ٽ� ����
+        // 활성 캐릭터 다시 생성
         DespawnAllCharacters();
         SpawnActiveCharacters();
     }
@@ -195,11 +196,12 @@ public class CharacterManager : MonoBehaviour
         activeCharacters.Clear();
     }
 
-    public void LevelUpCharacter(int index)
+    public void LevelUpCharacter(string characterId)
     {
-        if (index >= 0 && index < characters.Count)
+        CharacterData character = GetCharacterById(characterId);
+        if (character != null)
         {
-            characters[index].level++;
+            character.level++;
             InitializeCharacterUI();
         }
     }
@@ -242,5 +244,15 @@ public class CharacterManager : MonoBehaviour
     public CharacterData GetCurrentCharacter()
     {
         return characters.Find(c => c.id == currentCharacterId);
+    }
+
+    public CharacterData GetCharacterById(string characterId)
+    {
+        return characters.Find(c => c.id == characterId);
+    }
+
+    public void UpgradeCharacter(string characterId)
+    {
+        // 캐릭터 업그레이드
     }
 }

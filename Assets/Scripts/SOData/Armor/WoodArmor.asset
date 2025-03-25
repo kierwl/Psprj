@@ -12,17 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a11e4b8514358af4daf3e6205d3514c0, type: 3}
   m_Name: WoodArmor
   m_EditorClassIdentifier: 
-  itemID: 
-  itemName: 
-  description: 
-  icon: {fileID: 0}
+  itemID: 0
+  itemName: "\uD2BC\uD2BC\uD55C \uB098\uBB34\uAC11\uC637"
+  description: "\uB098\uBB34\uAC11\uC637\uC774\uB2E4."
+  icon: {fileID: 21300000, guid: 2750da8e4b41f294090c5d2a83c0992f, type: 3}
   itemType: 0
-  rarity: 0
-  buyPrice: 0
-  sellPrice: 0
+  rarity: 4
+  buyPrice: 100
+  sellPrice: 10
   isSellable: 1
-  defense: 0
-  healthBonus: 0
-  elementalResistance: 0
-  armorType: 0
-  armorPrefab: {fileID: 0}
+  defense: 50
+  healthBonus: 100
+  elementalResistance: 10
+  armorType: 1
+  armorPrefab: {fileID: 3906672137253865033, guid: 97a96fb7a22fe664597a4e08f4dd1237,
+    type: 3}

@@ -146,10 +146,26 @@ public class EquipmentManager : MonoBehaviour
             }
         }
 
-        // 캐릭터 스탯 업데이트
-        // 캐릭터의 최대 스탯 계산 방식
+        // 메인 플레이어인 경우 PlayerStats 컴포넌트에 직접 적용
+        if (characterId == "player")
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                PlayerStats playerStats = player.GetComponent<PlayerStats>();
+                if (playerStats != null)
+                {
+                    playerStats.OnEquipmentChanged();
+                    Debug.Log("플레이어 장비 스탯 적용됨");
+                    return;
+                }
+            }
+        }
+
+        // 다른 캐릭터인 경우 CharacterManager를 통해 적용
         CharacterManager.instance.UpdateCharacterBonusStats(characterId, healthBonus, attackBonus, defenseBonus, speedBonus);
     }
+
 
     public void UpgradeEquipment(EquipmentData equipment)
     {
@@ -181,6 +197,68 @@ public class EquipmentManager : MonoBehaviour
         }
 
         // UI 업데이트 처리
+    }
+
+    // 아이템의 설명을 생성하는 메서드 추가
+    public string GetEquipmentDescription(EquipmentData equipment)
+    {
+        if (equipment == null)
+            return "정보 없음";
+
+        string desc = $"<b>{equipment.name}</b> (Lv.{equipment.level})\n";
+        desc += $"타입: {GetEquipmentTypeString(equipment.type)}\n\n";
+
+        // 기본 스탯 보너스
+        if (equipment.baseHealthBonus > 0)
+            desc += $"체력: +{equipment.GetCurrentHealthBonus()}\n";
+
+        if (equipment.baseAttackBonus > 0)
+            desc += $"공격력: +{equipment.GetCurrentAttackBonus()}\n";
+
+        if (equipment.baseDefenseBonus > 0)
+            desc += $"방어력: +{equipment.GetCurrentDefenseBonus()}\n";
+
+        if (equipment.speedBonus > 0)
+            desc += $"이동 속도: +{equipment.speedBonus}\n";
+
+        // 추가 정보
+        if (equipment.level > 1)
+            desc += $"\n강화 단계: {equipment.level} / {equipment.maxLevel}\n";
+
+        if (equipment.description != null && equipment.description.Length > 0)
+            desc += $"\n{equipment.description}";
+
+        return desc;
+    }
+
+    // 장비 타입을 문자열로 반환하는 메서드
+    private string GetEquipmentTypeString(EquipmentType type)
+    {
+        switch (type)
+        {
+            case EquipmentType.Weapon: return "무기";
+            case EquipmentType.Armor: return "방어구";
+            case EquipmentType.Helmet: return "투구";
+            case EquipmentType.Gloves: return "장갑";
+            case EquipmentType.Boots: return "신발";
+            case EquipmentType.Accessory: return "악세서리";
+            default: return "기타";
+        }
+    }
+
+    // 새 아이템 구매 메서드 추가
+    public bool BuyEquipment(EquipmentData equipment, int cost)
+    {
+        if (equipment == null || CurrencyManager.instance == null)
+            return false;
+
+        if (CurrencyManager.instance.SpendGold(cost))
+        {
+            AddEquipment(equipment);
+            return true;
+        }
+
+        return false;
     }
 
     public void SellEquipment(EquipmentData equipment)

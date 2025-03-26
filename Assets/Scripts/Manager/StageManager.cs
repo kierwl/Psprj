@@ -201,10 +201,26 @@ public class StageManager : MonoBehaviour
 
         // 보상 지급
         PlayerLevel.instance?.AddExperience(expReward);
-        CurrencyManager.instance?.AddGold(goldReward);
+
+        // PlayerStats를 통해 골드 지급 (CurrencyManager 대신)
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        PlayerStats playerStats = player?.GetComponent<PlayerStats>();
+
+        if (playerStats != null)
+        {
+            playerStats.AddGold(goldReward);
+            Debug.Log($"플레이어 스탯 시스템을 통해 {goldReward} 골드를 지급했습니다.");
+        }
+        else if (CurrencyManager.instance != null)
+        {
+            CurrencyManager.instance.AddGold(goldReward);
+        }
 
         if (gems > 0)
-            CurrencyManager.instance?.AddGems(gems);
+        {
+            if (CurrencyManager.instance != null)
+                CurrencyManager.instance.AddGems(gems);
+        }
 
         // 아이템 보상 처리
         GiveItemRewards();
@@ -263,16 +279,50 @@ public class StageManager : MonoBehaviour
     // 아이템 보상 지급
     private void GiveItemRewards()
     {
+        // 새로운 ItemManager를 사용한 아이템 처리
+        ItemManager itemManager = ItemManager.instance;
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        Inventory inventory = Inventory.instance;
+
         // 확정 아이템 지급
         foreach (var dropData in currentStage.guaranteedDrops)
         {
             if (dropData.item != null)
             {
                 int amount = Random.Range(dropData.minAmount, dropData.maxAmount + 1);
-                EquipmentData equipment = ConvertToEquipmentData(dropData.item);
-                if (equipment != null)
+
+                // 인벤토리 시스템 사용 (우선)
+                if (inventory != null)
                 {
-                    EquipmentManager.instance?.AddEquipment(equipment);
+                    inventory.AddItem(dropData.item, amount);
+                    Debug.Log($"인벤토리에 {dropData.item.itemName} x{amount}을(를) 추가했습니다.");
+
+                    // 플레이어 스탯 업데이트 (아이템으로 인한 스탯 변화 반영)
+                    if (player != null)
+                    {
+                        PlayerStats playerStats = player.GetComponent<PlayerStats>();
+                        if (playerStats != null)
+                        {
+                            playerStats.ApplyInventoryEquipment();
+                        }
+                    }
+                }
+                // 기존 EquipmentManager 사용 (대체)
+                else if (EquipmentManager.instance != null)
+                {
+                    EquipmentData equipment = ConvertToEquipmentData(dropData.item);
+                    if (equipment != null)
+                    {
+                        EquipmentManager.instance.AddEquipment(equipment);
+                        Debug.Log($"EquipmentManager에 {equipment.name}을(를) 추가했습니다.");
+                    }
+                }
+
+                // 아이템 필드 드롭 효과 (선택적)
+                if (itemManager != null && player != null)
+                {
+                    Vector3 dropPosition = player.transform.position + new Vector3(Random.Range(-2f, 2f), 0.5f, Random.Range(-2f, 2f));
+                    itemManager.DropItem(dropData.item, dropPosition, amount);
                 }
             }
         }
@@ -283,16 +333,55 @@ public class StageManager : MonoBehaviour
             if (dropData.item != null && Random.value <= dropData.dropChance)
             {
                 int amount = Random.Range(dropData.minAmount, dropData.maxAmount + 1);
-                EquipmentData equipment = ConvertToEquipmentData(dropData.item);
-                if (equipment != null)
+
+                // 인벤토리 시스템 사용 (우선)
+                if (inventory != null)
                 {
-                    EquipmentManager.instance?.AddEquipment(equipment);
+                    inventory.AddItem(dropData.item, amount);
+                    Debug.Log($"인벤토리에 {dropData.item.itemName} x{amount}을(를) 추가했습니다.");
+
+                    // 플레이어 스탯 업데이트 (아이템으로 인한 스탯 변화 반영)
+                    if (player != null)
+                    {
+                        PlayerStats playerStats = player.GetComponent<PlayerStats>();
+                        if (playerStats != null)
+                        {
+                            playerStats.ApplyInventoryEquipment();
+                        }
+                    }
                 }
+                // 기존 EquipmentManager 사용 (대체)
+                else if (EquipmentManager.instance != null)
+                {
+                    EquipmentData equipment = ConvertToEquipmentData(dropData.item);
+                    if (equipment != null)
+                    {
+                        EquipmentManager.instance.AddEquipment(equipment);
+                        Debug.Log($"EquipmentManager에 {equipment.name}을(를) 추가했습니다.");
+                    }
+                }
+
+                // 아이템 필드 드롭 효과 (선택적)
+                if (itemManager != null && player != null)
+                {
+                    Vector3 dropPosition = player.transform.position + new Vector3(Random.Range(-2f, 2f), 0.5f, Random.Range(-2f, 2f));
+                    itemManager.DropItem(dropData.item, dropPosition, amount);
+                }
+            }
+        }
+
+        // 장비 효과 적용 (EquipmentManager 사용 시)
+        if (EquipmentManager.instance != null && player != null)
+        {
+            PlayerStats playerStats = player.GetComponent<PlayerStats>();
+            if (playerStats != null)
+            {
+                playerStats.ApplyEquipmentStats();
             }
         }
     }
 
-    // ItemSO를 EquipmentData로 변환
+    // ItemSO를 EquipmentData로 변환 (기존 EquipmentManager 지원용)
     private EquipmentData ConvertToEquipmentData(ItemSO item)
     {
         if (item == null) return null;
@@ -310,15 +399,21 @@ public class StageManager : MonoBehaviour
         // 아이템 타입에 따른 스탯 설정
         if (item is WeaponSO weapon)
         {
-            equipment.attackBonus = weapon.attackDamage;
-            equipment.attackBonusPerLevel = weapon.attackDamage * 0.1f;
+            equipment.baseAttackBonus = weapon.attackDamage;
+            equipment.statGrowthRate = 0.1f; // 레벨당 10% 증가
         }
         else if (item is ArmorSO armor)
         {
-            equipment.defenseBonus = armor.defense;
-            equipment.healthBonus = armor.healthBonus;
-            equipment.defenseBonusPerLevel = armor.defense * 0.08f;
-            equipment.healthBonusPerLevel = armor.healthBonus * 0.08f;
+            equipment.baseDefenseBonus = armor.defense;
+            equipment.baseHealthBonus = armor.healthBonus;
+            equipment.statGrowthRate = 0.08f; // 레벨당 8% 증가
+        }
+        else if (item is AccessorySO accessory)
+        {
+            // 액세서리 특수 스탯
+            equipment.baseHealthBonus = accessory.healthBonus;
+            equipment.speedBonus = accessory.moveSpeedBonus;
+            // 추가 특성은 필요에 따라 확장
         }
 
         return equipment;
@@ -327,21 +422,9 @@ public class StageManager : MonoBehaviour
     // ItemSO에서 EquipmentType 추출
     private EquipmentType GetEquipmentType(ItemSO item)
     {
-        if (item is WeaponSO weapon)
+        if (item is WeaponSO)
         {
-            switch (weapon.weaponType)
-            {
-                case WeaponSO.WeaponType.Sword:
-                case WeaponSO.WeaponType.Axe:
-                    return EquipmentType.Weapon;
-                case WeaponSO.WeaponType.Bow:
-                    return EquipmentType.Weapon;
-                case WeaponSO.WeaponType.Staff:
-                case WeaponSO.WeaponType.Wand:
-                    return EquipmentType.Weapon;
-                default:
-                    return EquipmentType.Weapon;
-            }
+            return EquipmentType.Weapon;
         }
         else if (item is ArmorSO armor)
         {
@@ -352,22 +435,39 @@ public class StageManager : MonoBehaviour
                 case ArmorSO.ArmorType.Chest:
                     return EquipmentType.Armor;
                 case ArmorSO.ArmorType.Gloves:
+                    return EquipmentType.Gloves;
                 case ArmorSO.ArmorType.Boots:
-                    return EquipmentType.Accessory;
-                case ArmorSO.ArmorType.Shield:
-                    return EquipmentType.Accessory;
+                    return EquipmentType.Boots;
                 default:
-                    return EquipmentType.Accessory;
+                    return EquipmentType.Armor;
             }
         }
-        return EquipmentType.Accessory;
+        else if (item is AccessorySO)
+        {
+            return EquipmentType.Accessory;
+        }
+
+        return EquipmentType.Accessory; // 기본값
     }
 
     // ItemSO에서 EquipmentRarity 추출
     private EquipmentRarity GetEquipmentRarity(ItemSO item)
     {
-        // 기본값은 Common으로 설정
-        return EquipmentRarity.Common;
+        switch (item.rarity)
+        {
+            case ItemSO.ItemRarity.Common:
+                return EquipmentRarity.Common;
+            case ItemSO.ItemRarity.Uncommon:
+                return EquipmentRarity.Uncommon;
+            case ItemSO.ItemRarity.Rare:
+                return EquipmentRarity.Rare;
+            case ItemSO.ItemRarity.Epic:
+                return EquipmentRarity.Epic;
+            case ItemSO.ItemRarity.Legendary:
+                return EquipmentRarity.Legendary;
+            default:
+                return EquipmentRarity.Common;
+        }
     }
 
     // 스테이지 환경 로드
@@ -390,6 +490,10 @@ public class StageManager : MonoBehaviour
     {
         // 스테이지 UI 매니저에 UI 업데이트
         // 예: 남은 적 수, 진행 상태, 타이머 등
+        if (GameUIManager.instance != null)
+        {
+            GameUIManager.instance.UpdateStageProgress(enemiesKilled, totalEnemies, stageTimer);
+        }
     }
 
     private void Update()
@@ -404,6 +508,12 @@ public class StageManager : MonoBehaviour
             {
                 // 시간 초과로 실패
                 StageFail();
+            }
+
+            // 주기적 UI 업데이트 (필요시)
+            if (Time.frameCount % 30 == 0) // 약 0.5초마다 업데이트
+            {
+                UpdateStageUI();
             }
         }
     }

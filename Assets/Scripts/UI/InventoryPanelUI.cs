@@ -356,15 +356,6 @@ public class InventoryPanelUI : MonoBehaviour
             if (item.speedBonus > 0)
                 itemStats.text += $"속도 보너스: +{item.speedBonus:F2}\n";
 
-            // 추가 속성 표시
-            if (item.attributes.Count > 0)
-            {
-                itemStats.text += "\n추가 속성:";
-                foreach (var attr in item.attributes)
-                {
-                    itemStats.text += $"\n- {attr.name}: {attr.value:F1}";
-                }
-            }
         }
 
         if (equipButton != null)

@@ -28,7 +28,10 @@ public class Inventory : MonoBehaviour
     private void Awake()
     {
         if (instance == null)
+        {
             instance = this;
+            DontDestroyOnLoad(gameObject); // 씬 전환 시에도 유지
+        }
         else
             Destroy(gameObject);
 
@@ -37,6 +40,8 @@ public class Inventory : MonoBehaviour
         {
             items[i].slotIndex = i;
         }
+
+        Debug.Log("Inventory 초기화됨");
     }
 
     public bool AddItem(ItemSO item, int amount = 1)
@@ -68,7 +73,7 @@ public class Inventory : MonoBehaviour
 
             var newItem = new InventoryItem { item = item, amount = amount, slotIndex = emptySlot };
             items.Add(newItem);
-            
+
             if (autoSort)
                 SortInventory();
         }
@@ -91,7 +96,7 @@ public class Inventory : MonoBehaviour
             {
                 items.Remove(existingItem);
             }
-            
+
             OnItemRemoved?.Invoke(item, amount);
             OnInventoryChanged?.Invoke();
             Debug.Log($"아이템 제거: {item.name} x{amount}");
@@ -117,7 +122,7 @@ public class Inventory : MonoBehaviour
         items.Clear();
         OnInventoryChanged?.Invoke();
     }
-    
+
     public int FindEmptySlot()
     {
         // 현재 사용중인 슬롯 인덱스 목록 가져오기
@@ -127,17 +132,17 @@ public class Inventory : MonoBehaviour
             if (item.slotIndex >= 0)
                 usedSlots.Add(item.slotIndex);
         }
-        
+
         // 비어있는 첫 번째 슬롯 찾기
         for (int i = 0; i < maxSlots; i++)
         {
             if (!usedSlots.Contains(i))
                 return i;
         }
-        
+
         return -1; // 빈 슬롯이 없음
     }
-    
+
     public void SortInventory()
     {
         // 아이템 유형 및 희귀도 기준으로 정렬
@@ -145,58 +150,58 @@ public class Inventory : MonoBehaviour
             // 먼저 아이템 유형별로 정렬
             if (a.item.itemType != b.item.itemType)
                 return a.item.itemType.CompareTo(b.item.itemType);
-                
+
             // 그 다음 희귀도로 정렬 (높은 희귀도가 먼저)
             if (a.item.rarity != b.item.rarity)
                 return b.item.rarity.CompareTo(a.item.rarity);
-                
+
             // 마지막으로 이름으로 정렬
             return a.item.itemName.CompareTo(b.item.itemName);
         });
-        
+
         // 정렬 후 슬롯 인덱스 재할당
         for (int i = 0; i < items.Count; i++)
         {
             items[i].slotIndex = i;
         }
-        
+
         OnInventoryChanged?.Invoke();
     }
-    
+
     public InventoryItem GetItemAtSlot(int slotIndex)
     {
         return items.Find(item => item.slotIndex == slotIndex);
     }
-    
+
     public bool SwapItems(int slotIndexA, int slotIndexB)
     {
         InventoryItem itemA = GetItemAtSlot(slotIndexA);
         InventoryItem itemB = GetItemAtSlot(slotIndexB);
-        
+
         if (itemA == null && itemB == null)
             return false;
-            
+
         if (itemA != null)
             itemA.slotIndex = slotIndexB;
-            
+
         if (itemB != null)
             itemB.slotIndex = slotIndexA;
-            
+
         OnInventoryChanged?.Invoke();
         return true;
     }
-    
+
     public List<InventoryItem> GetItemsByType(ItemSO.ItemType type)
     {
         return items.FindAll(item => item.item.itemType == type);
     }
-    
+
     // 아이템 장착 메서드
     public bool EquipItem(int slotIndex)
     {
         InventoryItem item = GetItemAtSlot(slotIndex);
         if (item == null || item.isEquipped) return false;
-        
+
         // 같은 유형의 다른 장착 아이템이 있는지 확인하고 해제
         foreach (var otherItem in items)
         {
@@ -205,33 +210,40 @@ public class Inventory : MonoBehaviour
                 otherItem.isEquipped = false;
             }
         }
-        
+
         item.isEquipped = true;
         OnInventoryChanged?.Invoke();
         return true;
     }
-    
+
     // 아이템 장착 해제 메서드
     public bool UnequipItem(int slotIndex)
     {
         InventoryItem item = GetItemAtSlot(slotIndex);
         if (item == null || !item.isEquipped) return false;
-        
+
         item.isEquipped = false;
         OnInventoryChanged?.Invoke();
         return true;
     }
-    
+
     // 특정 아이템이 장착되어 있는지 확인
     public bool IsItemEquipped(ItemSO item)
     {
         return items.Exists(i => i.item == item && i.isEquipped);
     }
-    
+
     // 특정 슬롯의 아이템이 장착되어 있는지 확인
     public bool IsSlotEquipped(int slotIndex)
     {
         InventoryItem item = GetItemAtSlot(slotIndex);
         return item != null && item.isEquipped;
     }
-} 
+
+    // 인벤토리 변경 이벤트 수동 발생 (외부에서 호출)
+    public void NotifyInventoryChanged()
+    {
+        Debug.Log("인벤토리 변경 알림 발생");
+        OnInventoryChanged?.Invoke();
+    }
+}

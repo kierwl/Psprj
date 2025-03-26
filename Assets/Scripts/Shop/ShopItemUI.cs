@@ -2,61 +2,77 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.EventSystems;
 
-public class ShopItemUI : MonoBehaviour, IPointerClickHandler
+public class ShopItemUI : MonoBehaviour
 {
     [SerializeField] private Image itemIcon;
     [SerializeField] private TextMeshProUGUI itemName;
     [SerializeField] private TextMeshProUGUI itemPrice;
-    [SerializeField] private Image background;
-    
-    private ItemSO item;
-    private int price;
-    
+    [SerializeField] private Button itemButton;
+
+    private ItemSO currentItem;
+    private int currentPrice;
+
     // 아이템 클릭 이벤트
     public event Action<ItemSO, int> OnItemClicked;
-    
-    public void SetItem(ItemSO newItem, int priceValue)
+
+    private void Awake()
     {
-        item = newItem;
-        price = priceValue;
-        
-        if (itemIcon != null && item.icon != null)
+        // 버튼 이벤트 등록
+        if (itemButton != null)
+            itemButton.onClick.AddListener(HandleItemClick);
+        else
+            Debug.LogError("itemButton이 할당되지 않았습니다!", this);
+    }
+
+    public void SetItem(ItemSO item, int price)
+    {
+        if (item == null)
+        {
+            Debug.LogError("SetItem에 null 아이템이 전달되었습니다!", this);
+            return;
+        }
+
+        currentItem = item;
+        currentPrice = price;
+
+        // UI 요소 업데이트
+        if (itemIcon != null)
             itemIcon.sprite = item.icon;
-            
+        else
+            Debug.LogWarning("itemIcon이 할당되지 않았습니다!", this);
+
         if (itemName != null)
             itemName.text = item.itemName;
-            
+        else
+            Debug.LogWarning("itemName이 할당되지 않았습니다!", this);
+
         if (itemPrice != null)
-            itemPrice.text = $"{price} 골드";
-            
-        // 아이템 희귀도에 따른 배경색 설정
-        if (background != null)
-            background.color = GetRarityColor(item.rarity);
+            itemPrice.text = price.ToString() + " 골드";
+        else
+            Debug.LogWarning("itemPrice가 할당되지 않았습니다!", this);
+
+        // 디버그 로그
+        Debug.Log($"아이템 설정됨: {item.itemName}, 가격: {price}");
     }
-    
-    public void OnPointerClick(PointerEventData eventData)
+
+    private void HandleItemClick()
     {
-        OnItemClicked?.Invoke(item, price);
-    }
-    
-    private Color GetRarityColor(ItemSO.ItemRarity rarity)
-    {
-        switch (rarity)
+        if (currentItem != null)
         {
-            case ItemSO.ItemRarity.Common:
-                return new Color(0.8f, 0.8f, 0.8f, 0.5f);
-            case ItemSO.ItemRarity.Uncommon:
-                return new Color(0.0f, 0.8f, 0.0f, 0.5f);
-            case ItemSO.ItemRarity.Rare:
-                return new Color(0.0f, 0.0f, 1.0f, 0.5f);
-            case ItemSO.ItemRarity.Epic:
-                return new Color(0.8f, 0.0f, 0.8f, 0.5f);
-            case ItemSO.ItemRarity.Legendary:
-                return new Color(1.0f, 0.8f, 0.0f, 0.5f);
-            default:
-                return new Color(1.0f, 1.0f, 1.0f, 0.5f);
+            OnItemClicked?.Invoke(currentItem, currentPrice);
+            Debug.Log($"아이템 클릭됨: {currentItem.itemName}");
+        }
+        else
+        {
+            Debug.LogWarning("클릭된 아이템이 null입니다!", this);
         }
     }
-} 
+
+    private void OnDestroy()
+    {
+        // 버튼 이벤트 해제
+        if (itemButton != null)
+            itemButton.onClick.RemoveListener(HandleItemClick);
+    }
+}

@@ -13,8 +13,8 @@ public class GameUIManager : MonoBehaviour
     public BottomPanelUI bottomPanel;
 
     [Header("Game Panels")]
-    public InventoryPanelUI inventoryPanel;
-    public ShopPanelUI shopPanel;
+    public InventoryUI inventoryPanel;
+    public ShopManager shopPanel;
     public GameObject upgradePanel;
     public GameObject stagePanel;
     public GameObject settingsPanel;

@@ -14,7 +14,8 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI inventoryTitle;
     [SerializeField] private Button sortButton;
     [SerializeField] private GameObject inventoryPanel;
-    
+    [SerializeField] private Button Close;
+
     [Header("아이템 정보 패널")]
     [SerializeField] private GameObject itemInfoPanel;
     [SerializeField] private Image itemIcon;
@@ -49,7 +50,9 @@ public class InventoryUI : MonoBehaviour
             
         if (upgradeButton != null)
             upgradeButton.onClick.AddListener(OnUpgradeButtonClicked);
-            
+        if (Close != null)
+            Close.onClick.AddListener(ToggleInventory);
+
         // CloseButton 이벤트 연결
         Button closeButton = inventoryPanel.GetComponentInChildren<Button>(true);
         if (closeButton != null && closeButton.name == "CloseButton")
@@ -65,7 +68,7 @@ public class InventoryUI : MonoBehaviour
         inventory.OnInventoryChanged += UpdateInventoryUI;
         
         // UI 초기 상태 설정
-        HideItemInfo();
+        //HideItemInfo();
         UpdateInventoryUI();
     }
     
@@ -332,23 +335,92 @@ public class InventoryUI : MonoBehaviour
             default: return "알 수 없음";
         }
     }
-    
+
     private void OnUpgradeButtonClicked()
     {
-        if (selectedItem == null || selectedSlotIndex < 0) return;
-        
-        // 업그레이드 매니저 참조 가져오기
-        UpgradeManager upgradeManager = UpgradeManager.instance;
-        if (upgradeManager != null)
+        try
         {
+            Debug.Log("[InventoryUI] OnUpgradeButtonClicked 호출됨");
+
+            // 선택된 아이템이 없는 경우
+            if (selectedItem == null)
+            {
+                Debug.LogError("[InventoryUI] 업그레이드 버튼 클릭: 선택된 아이템이 없습니다!");
+                return;
+            }
+
+            // 선택된 슬롯 인덱스가 유효하지 않은 경우
+            if (selectedSlotIndex < 0)
+            {
+                Debug.LogError("[InventoryUI] 업그레이드 버튼 클릭: 선택된 슬롯 인덱스가 유효하지 않습니다!");
+                return;
+            }
+
+            // selectedItem.item이 null인 경우
+            if (selectedItem.item == null)
+            {
+                Debug.LogError("[InventoryUI] 업그레이드 버튼 클릭: 선택된 아이템의 item 속성이 null입니다!");
+                return;
+            }
+
+            Debug.Log($"[InventoryUI] 아이템 {selectedItem.item.itemName} 업그레이드 시도");
+
+            // 먼저 씬에 UpgradeManager가 있는지 직접 확인 (instance 사용하지 않음)
+            UpgradeManager upgradeManager = FindObjectOfType<UpgradeManager>();
+
+            if (upgradeManager == null)
+            {
+                Debug.LogError("[InventoryUI] UpgradeManager를 찾을 수 없습니다!");
+
+                // 우회 방법: 씬에 GameObject 생성 및 UpgradeManager 추가
+                GameObject managerObj = new GameObject("UpgradeManager");
+                upgradeManager = managerObj.AddComponent<UpgradeManager>();
+
+                if (upgradeManager == null)
+                {
+                    Debug.LogError("[InventoryUI] UpgradeManager를 생성할 수 없습니다!");
+                    return;
+                }
+
+                // 패널 활성화 시도 (초기화 및 Awake 호출을 위해)
+                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(managerObj, UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            }
+
             // 인벤토리 패널 닫기
-            ToggleInventory();
-            
-            // 업그레이드 패널 열기
-            upgradeManager.OpenUpgradePanel(selectedItem.item);
+            try
+            {
+                // 인벤토리 패널 상태 저장
+                bool wasActive = inventoryPanel.activeSelf;
+
+                // 패널이 활성화된 경우에만 닫기
+                if (wasActive)
+                {
+                    Debug.Log("[InventoryUI] 인벤토리 패널 닫기 시도");
+                    inventoryPanel.SetActive(false);
+                }
+
+                // 업그레이드 패널 열기 시도
+                Debug.Log("[InventoryUI] 업그레이드 패널 열기 시도");
+                upgradeManager.OpenUpgradePanel(selectedItem.item);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[InventoryUI] 예외 발생: {e.Message}\n{e.StackTrace}");
+
+                // 인벤토리 패널 유지 (오류 발생 시)
+                if (inventoryPanel != null && !inventoryPanel.activeSelf)
+                {
+                    inventoryPanel.SetActive(true);
+                }
+            }
+        }
+        catch (System.Exception e)
+        {
+            // 모든 예외 처리
+            Debug.LogError($"[InventoryUI] OnUpgradeButtonClicked 메서드에서 예외 발생: {e.Message}\n{e.StackTrace}");
         }
     }
-    
+
     private void OnDestroy()
     {
         // 이벤트 등록 해제
@@ -362,4 +434,5 @@ public class InventoryUI : MonoBehaviour
                 slot.OnSlotClicked -= OnItemSlotClicked;
         }
     }
+
 } 

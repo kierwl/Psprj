@@ -12872,6 +12872,7 @@ MonoBehaviour:
   enemyCountText: {fileID: 644383843}
   stageTimerText: {fileID: 549012384}
   stageTitleText: {fileID: 1822132541}
+  messageText: {fileID: 0}
 --- !u!1 &1704091593
 GameObject:
   m_ObjectHideFlags: 0

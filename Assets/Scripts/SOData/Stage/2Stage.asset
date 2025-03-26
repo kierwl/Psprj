@@ -10,34 +10,39 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cdcbf34498c31644dac80b2ba57ac16a, type: 3}
-  m_Name: 1Stage
+  m_Name: 2Stage
   m_EditorClassIdentifier: 
-  stageID: 0
-  stageName: "\uBA54\uB9C8\uB978\uD611\uACE1"
-  description: "\uB9D0\uB77C\uBC84\uB9B0 \uD611\uACE1\uC774\uB2E4."
+  stageID: 1
+  stageName: "\uC595\uC740\uBC14\uB2E4"
+  description: "\uD611\uACE1\uB05D\uC740 \uBC14\uB2E4\uC640 \uC5F0\uACB0\uB418\uC5B4
+    \uC788\uB2E4."
   stageIcon: {fileID: 0}
   stageEnvironment: {fileID: 0}
-  recommendedLevel: 0
+  recommendedLevel: 3
   staminaCost: 10
   timeLimitInSeconds: 180
   hasTimerLimit: 0
   enemySpawns:
-  - enemyData: {fileID: 11400000, guid: 9bdbff9bb5cda704caa10e5ef207b566, type: 2}
+  - enemyData: {fileID: 11400000, guid: f2535d771deb38e479118d6883f3ec6f, type: 2}
     count: 20
-    level: 1
+    level: 3
     spawnInterval: 10
-    spawnMethod: 0
+    spawnMethod: 2
   bossSpawn:
-    bossData: {fileID: 0}
-    level: 1
-    spawnDelay: 5
+    bossData: {fileID: 11400000, guid: f2535d771deb38e479118d6883f3ec6f, type: 2}
+    level: 5
+    spawnDelay: 20
     introDialogue: 
-  hasBoss: 0
-  baseExpReward: 0
-  baseGoldReward: 0
+  hasBoss: 1
+  baseExpReward: 15
+  baseGoldReward: 20
   gemDropChance: 0.1
   gemAmount: 1
-  guaranteedDrops: []
+  guaranteedDrops:
+  - item: {fileID: 11400000, guid: 45f070b0f00bd9342b8ae78a91cfcfd6, type: 2}
+    dropChance: 10
+    minAmount: 0
+    maxAmount: 1
   possibleDrops: []
   isSpecialStage: 0
   isEventStage: 0

@@ -19,13 +19,20 @@ public class GameUIManager : MonoBehaviour
     public GameObject stagePanel;
     public GameObject settingsPanel;
     public GameObject questPanel;
-    
+
     [Header("Popup Panels")]
     public GameObject offlineProgressPanel;
     public GameObject stageClearPanel;
     public GameObject stageFailPanel;
     public GameObject levelUpPanel;
     public GameObject achievementPanel;
+
+    [Header("Stage UI")]
+    public GameObject stageProgressPanel;
+    public Slider progressBar;
+    public TextMeshProUGUI enemyCountText;
+    public TextMeshProUGUI stageTimerText;
+    public TextMeshProUGUI stageTitleText;
 
     private void Awake()
     {
@@ -47,15 +54,34 @@ public class GameUIManager : MonoBehaviour
     // 모든 UI 업데이트
     public void UpdateAllUI()
     {
-        // 리소스 업데이트
-        if (topPanel != null && CurrencyManager.instance != null)
+        // 리소스 업데이트 - PlayerStats 시스템 우선 활용
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        PlayerStats playerStats = player?.GetComponent<PlayerStats>();
+
+        if (topPanel != null)
         {
-            topPanel.UpdateResources(
-                CurrencyManager.instance.gold,
-                CurrencyManager.instance.gems,
-                CurrencyManager.instance.energy,
-                CurrencyManager.instance.maxEnergy
-            );
+            if (playerStats != null)
+            {
+                // PlayerStats에서 골드 가져오기
+                int gold = playerStats.GetGold();
+
+                // 나머지 리소스는 CurrencyManager에서 가져오기
+                int gems = CurrencyManager.instance != null ? CurrencyManager.instance.gems : 0;
+                int energy = CurrencyManager.instance != null ? CurrencyManager.instance.energy : 0;
+                int maxEnergy = CurrencyManager.instance != null ? CurrencyManager.instance.maxEnergy : 100;
+
+                topPanel.UpdateResources(gold, gems, energy, maxEnergy);
+            }
+            else if (CurrencyManager.instance != null)
+            {
+                // 기존 방식 유지
+                topPanel.UpdateResources(
+                    CurrencyManager.instance.gold,
+                    CurrencyManager.instance.gems,
+                    CurrencyManager.instance.energy,
+                    CurrencyManager.instance.maxEnergy
+                );
+            }
         }
 
         // 레벨 정보 업데이트
@@ -81,6 +107,51 @@ public class GameUIManager : MonoBehaviour
         UpdateNotifications();
     }
 
+    // 스테이지 진행 상황 업데이트
+    public void UpdateStageProgress(int enemiesKilled, int totalEnemies, float stageTimer)
+    {
+        // 스테이지 진행 패널이 없으면 리턴
+        if (stageProgressPanel == null) return;
+
+        // 스테이지 진행 패널 활성화
+        if (!stageProgressPanel.activeSelf)
+            stageProgressPanel.SetActive(true);
+
+        // 프로그래스 바 업데이트
+        if (progressBar != null)
+        {
+            float progress = totalEnemies > 0 ? (float)enemiesKilled / totalEnemies : 0f;
+            progressBar.value = progress;
+        }
+
+        // 적 카운트 텍스트 업데이트
+        if (enemyCountText != null)
+        {
+            enemyCountText.text = $"{enemiesKilled} / {totalEnemies}";
+        }
+
+        // 타이머 텍스트 업데이트
+        if (stageTimerText != null)
+        {
+            int minutes = Mathf.FloorToInt(stageTimer / 60);
+            int seconds = Mathf.FloorToInt(stageTimer % 60);
+            stageTimerText.text = $"{minutes:00}:{seconds:00}";
+        }
+
+        // 스테이지 제목 업데이트 (스테이지 이름이 있는 경우)
+        if (stageTitleText != null && StageManager.instance?.currentStage != null)
+        {
+            stageTitleText.text = StageManager.instance.currentStage.stageName;
+        }
+    }
+
+    // 스테이지 UI 표시/숨기기
+    public void SetStageProgressVisible(bool visible)
+    {
+        if (stageProgressPanel != null)
+            stageProgressPanel.SetActive(visible);
+    }
+
     // 타이머 표시 업데이트
     private void UpdateTimerDisplay()
     {
@@ -88,7 +159,7 @@ public class GameUIManager : MonoBehaviour
         {
             float remainingTime = TimeRewardManager.instance.GetRemainingTime();
             bool isRewardReady = remainingTime <= 0;
-            
+
             string timeText;
             if (isRewardReady)
             {
@@ -101,7 +172,7 @@ public class GameUIManager : MonoBehaviour
                 int seconds = Mathf.FloorToInt(remainingTime % 60);
                 timeText = string.Format("{0:D2}:{1:D2}:{2:D2}", hours, minutes, seconds);
             }
-            
+
             topPanel.UpdateTimer(timeText, isRewardReady);
         }
     }
@@ -111,10 +182,22 @@ public class GameUIManager : MonoBehaviour
     {
         if (bottomPanel != null)
         {
-            // 인벤토리 알림 (새 아이템 획득 등)
-            bool hasNewItems = EquipmentManager.instance != null && EquipmentManager.instance.HasNewItems();
+            // 인벤토리 알림
+            bool hasNewItems = false;
+
+            // EquipmentManager 체크
+            if (EquipmentManager.instance != null)
+            {
+                hasNewItems = EquipmentManager.instance.HasNewItems();
+            }
+
+            // Inventory 체크 (나중에 인벤토리에 새 아이템 알림 기능이 추가된다면)
+            // if (Inventory.instance != null)
+            // {
+            //     hasNewItems = hasNewItems || Inventory.instance.HasNewItems();
+            // }
+
             bottomPanel.ShowInventoryNotification(hasNewItems);
-            
         }
     }
 
@@ -124,16 +207,16 @@ public class GameUIManager : MonoBehaviour
         // 다른 패널들만 닫기
         if (shopPanel != null)
             shopPanel.gameObject.SetActive(false);
-            
+
         if (upgradePanel != null)
             upgradePanel.SetActive(false);
-            
+
         if (stagePanel != null)
             stagePanel.SetActive(false);
-            
+
         if (settingsPanel != null)
             settingsPanel.SetActive(false);
-            
+
         if (questPanel != null)
             questPanel.SetActive(false);
 
@@ -187,19 +270,19 @@ public class GameUIManager : MonoBehaviour
     {
         if (inventoryPanel != null)
             inventoryPanel.gameObject.SetActive(false);
-            
+
         if (shopPanel != null)
             shopPanel.gameObject.SetActive(false);
-            
+
         if (upgradePanel != null)
             upgradePanel.SetActive(false);
-            
+
         if (stagePanel != null)
             stagePanel.SetActive(false);
-            
+
         if (settingsPanel != null)
             settingsPanel.SetActive(false);
-            
+
         if (questPanel != null)
             questPanel.SetActive(false);
     }
@@ -211,19 +294,19 @@ public class GameUIManager : MonoBehaviour
         {
             // 오프라인 패널 데이터 설정
             Transform panel = offlineProgressPanel.transform;
-            
-            panel.Find("TimeText").GetComponent<TextMeshProUGUI>().text = 
+
+            panel.Find("TimeText").GetComponent<TextMeshProUGUI>().text =
                 string.Format("{0:F1} 시간 동안 진행되었습니다", hours);
-                
-            panel.Find("GoldText").GetComponent<TextMeshProUGUI>().text = 
+
+            panel.Find("GoldText").GetComponent<TextMeshProUGUI>().text =
                 gold.ToString("N0");
-                
-            panel.Find("ExpText").GetComponent<TextMeshProUGUI>().text = 
+
+            panel.Find("ExpText").GetComponent<TextMeshProUGUI>().text =
                 exp.ToString("N0");
-                
-            panel.Find("MonstersText").GetComponent<TextMeshProUGUI>().text = 
+
+            panel.Find("MonstersText").GetComponent<TextMeshProUGUI>().text =
                 monsters.ToString("N0") + " 마리";
-                
+
             // 패널 표시
             offlineProgressPanel.SetActive(true);
         }
@@ -236,21 +319,39 @@ public class GameUIManager : MonoBehaviour
         {
             // 스테이지 클리어 패널 데이터 설정
             Transform panel = stageClearPanel.transform;
-            
-            panel.Find("StageTitleText").GetComponent<TextMeshProUGUI>().text = 
+
+            panel.Find("StageTitleText").GetComponent<TextMeshProUGUI>().text =
                 string.Format("스테이지 {0} 클리어!", stageLevel);
-                
-            panel.Find("ExpText").GetComponent<TextMeshProUGUI>().text = 
+
+            panel.Find("ExpText").GetComponent<TextMeshProUGUI>().text =
                 "+" + expReward.ToString("N0");
-                
-            panel.Find("GoldText").GetComponent<TextMeshProUGUI>().text = 
+
+            panel.Find("GoldText").GetComponent<TextMeshProUGUI>().text =
                 "+" + goldReward.ToString("N0");
-                
-            panel.Find("GemText").GetComponent<TextMeshProUGUI>().text = 
+
+            panel.Find("GemText").GetComponent<TextMeshProUGUI>().text =
                 gemReward > 0 ? "+" + gemReward.ToString() : "";
-                
+
             // 패널 표시
             stageClearPanel.SetActive(true);
+
+            // 스테이지 진행 패널 숨기기
+            SetStageProgressVisible(false);
+        }
+    }
+
+    // 스테이지 실패 표시
+    public void ShowStageFail()
+    {
+        if (stageFailPanel != null)
+        {
+            // 스테이지 실패 패널 데이터 설정 (필요시)
+
+            // 패널 표시
+            stageFailPanel.SetActive(true);
+
+            // 스테이지 진행 패널 숨기기
+            SetStageProgressVisible(false);
         }
     }
 
@@ -261,13 +362,13 @@ public class GameUIManager : MonoBehaviour
         {
             // 레벨업 패널 데이터 설정
             Transform panel = levelUpPanel.transform;
-            
-            panel.Find("LevelText").GetComponent<TextMeshProUGUI>().text = 
+
+            panel.Find("LevelText").GetComponent<TextMeshProUGUI>().text =
                 string.Format("레벨 {0} 달성!", newLevel);
-                
+
             // 패널 표시
             levelUpPanel.SetActive(true);
-            
+
             // 자동 닫기
             Invoke("CloseLevelUpPanel", 3f);
         }

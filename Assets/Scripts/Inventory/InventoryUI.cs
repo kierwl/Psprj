@@ -15,6 +15,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Button sortButton;
     [SerializeField] private GameObject inventoryPanel;
     [SerializeField] private Button Close;
+    [SerializeField] private GameObject statsPanel;
 
     [Header("아이템 정보 패널")]
     [SerializeField] private GameObject itemInfoPanel;
@@ -301,7 +302,8 @@ public class InventoryUI : MonoBehaviour
         {
             bool isActive = !inventoryPanel.activeSelf;
             inventoryPanel.SetActive(isActive);
-            
+            statsPanel.SetActive(isActive);
+
             if (isActive)
                 UpdateInventoryUI();
             else
@@ -397,6 +399,7 @@ public class InventoryUI : MonoBehaviour
                 {
                     Debug.Log("[InventoryUI] 인벤토리 패널 닫기 시도");
                     inventoryPanel.SetActive(false);
+                    statsPanel.SetActive(false);
                 }
 
                 // 업그레이드 패널 열기 시도
@@ -411,6 +414,7 @@ public class InventoryUI : MonoBehaviour
                 if (inventoryPanel != null && !inventoryPanel.activeSelf)
                 {
                     inventoryPanel.SetActive(true);
+                    statsPanel.SetActive(true);
                 }
             }
         }

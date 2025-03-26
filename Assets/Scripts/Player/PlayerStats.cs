@@ -15,7 +15,7 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float attackSpeed = 1f;
     [SerializeField] private float criticalChance = 0.05f;
     [SerializeField] private float attackRange = 2f;
-    [SerializeField] private int gold = 1000;
+    [SerializeField] private int gold;
 
     [Header("장비 관련")]
     [SerializeField] private string characterId = "player";  // 해당 플레이어의 캐릭터 ID
@@ -51,6 +51,21 @@ public class PlayerStats : MonoBehaviour
         CriticalChance,
         AttackSpeed,
         AttackRange
+    }
+
+    public float GetBaseStatValue(PlayerStats.StatType statType)
+    {
+        switch (statType)
+        {
+            case PlayerStats.StatType.Health: return maxHealth;
+            case PlayerStats.StatType.Attack: return attackPower;
+            case PlayerStats.StatType.Defense: return defenseValue;
+            case PlayerStats.StatType.MoveSpeed: return moveSpeed;
+            case PlayerStats.StatType.CriticalChance: return criticalChance;
+            case PlayerStats.StatType.AttackSpeed: return attackSpeed;
+            case PlayerStats.StatType.AttackRange: return attackRange;
+            default: return 0;
+        }
     }
 
     private void Awake()
@@ -171,20 +186,7 @@ public class PlayerStats : MonoBehaviour
         return baseValue + additiveBonus + (baseValue * percentageBonus);
     }
 
-    private float GetBaseStatValue(StatType statType)
-    {
-        switch (statType)
-        {
-            case StatType.Health: return maxHealth;
-            case StatType.Attack: return attackPower;
-            case StatType.Defense: return defenseValue;
-            case StatType.MoveSpeed: return moveSpeed;
-            case StatType.CriticalChance: return criticalChance;
-            case StatType.AttackSpeed: return attackSpeed;
-            case StatType.AttackRange: return attackRange;
-            default: return 0;
-        }
-    }
+    
 
     // 골드 관련 메서드
     public void AddGold(int amount)

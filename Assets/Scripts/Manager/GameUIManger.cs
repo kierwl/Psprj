@@ -34,10 +34,6 @@ public class GameUIManager : MonoBehaviour
     public TextMeshProUGUI stageTimerText;
     public TextMeshProUGUI stageTitleText;
 
-    // Add this field to fix the error
-    [Header("Message UI")]
-    public TextMeshProUGUI messageText;
-
     private void Awake()
     {
         if (instance == null)
@@ -375,26 +371,6 @@ public class GameUIManager : MonoBehaviour
 
             // 자동 닫기
             Invoke("CloseLevelUpPanel", 3f);
-        }
-    }
-
-    // 메시지 표시 메서드
-    public void ShowMessage(string message, float duration)
-    {
-        if (messageText != null)
-        {
-            messageText.text = message;
-            CancelInvoke("ClearMessage");
-            Invoke("ClearMessage", duration);
-        }
-    }
-
-    // 메시지 지우기 메서드
-    private void ClearMessage()
-    {
-        if (messageText != null)
-        {
-            messageText.text = string.Empty;
         }
     }
 
